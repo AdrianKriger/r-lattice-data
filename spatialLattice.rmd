@@ -110,32 +110,32 @@ Unit of analysis: 777 suburbs in Cape Town, South Africa
 
 
 The variables contained in the dataset are:  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	OBJECTID   : polygon ID  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	OFC_SBRB_N : official suburb name  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	SHAPE_Leng : suburb perimeter  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	SHAPE_Area : suburb area   
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	OFFICIAL_SUBURB : suburb name carried over from property valuation dataset  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	NUM_RES_PROP : number residential properties sold.  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	MED_LAND_EXTENT.m2 : median extent land (m^2)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	MED_TOT_BLD_AREA.m2 : median building area (m^2)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	GV2015VAL : 2015 general property valuation  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	X : x coordinate of suburb centroid  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	Y : y coordinate of suburb centroid   
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	AVESTADist : average distance to the local police station  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	AVAPREArea : average precinct area  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	AvePrecinctsLen : average precinct perimetre  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	ROBRes : residential robbery  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	BUGRes : residential burglary  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	CRIME : total theft  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	AVMEDINC : average median household income  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	BACH : number bachelors degrees  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	AVBACH : avergae number bachelors degrees  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	STA : police station  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	STAD : distances to the local police station  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	PREA : precinct area  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	PREL : precinct perimetre  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	WARD : official ward / track number  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	geom : suburb geometry
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`OBJECTID`   : polygon ID  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`OFC_SBRB_N` : official suburb name  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`SHAPE_Leng` : suburb perimeter  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`SHAPE_Area` : suburb area   
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`OFFICIAL_SUBURB` : suburb name carried over from property valuation dataset  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`NUM_RES_PROP` : number residential properties sold.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`MED_LAND_EXTENT.m2` : median extent land (m^2)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`MED_TOT_BLD_AREA.m2` : median building area (m^2)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`GV2015VAL` : 2015 general property valuation  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`X` : x coordinate of suburb centroid  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`Y` : y coordinate of suburb centroid   
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`AVESTADist` : average distance to the local police station  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`AVAPREArea` : average precinct area  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`AvePrecinctsLen` : average precinct perimetre  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`ROBRes` : residential robbery  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`BUGRes` : residential burglary  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`CRIME` : total theft  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`AVMEDINC` : average median household income  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`BACH` : number bachelors degrees  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`AVBACH` : avergae number bachelors degrees  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`STA` : police station  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`STAD` : distances to the local police station  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`PREA` : precinct area  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`PREL` : precinct perimetre  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`WARD` : official ward / track number  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`geom` : suburb geometry
 
 <br>
 
@@ -324,6 +324,7 @@ plot(col["CRIME"], lwd = 0.2)#, axes = TRUE)
 main_map <- 
   col %>% 
   ggplot() +
+  #ggtitle("2015 Residential theft per suburb \n City of Cape Town") +
   geom_sf(
     aes(fill = CRIME),# / dwellings),
     lwd = 0.1, 
@@ -344,12 +345,12 @@ main_map <-
     limits = c(0, 1100),
     oob = scales::squish,
     #labels = scales::percent,
-    name = "Residential Crime (per suburb)"
+    name = "2015 Residential Crime (per suburb)"
     ) +
   coord_sf(expand = FALSE) +
   theme_void() +
   theme(
-    legend.justification = c(0, 1), #c(0, 1),
+    legend.justification = c(-0.2,1), #c(0, 1),
     legend.position = 'right' # #c(0.7, 0.8)#
     ) +
   theme(
@@ -376,8 +377,9 @@ main_map %>%
     x = 0.52, 
     y = 0.29,
     width = 0.46, 
-    height = 0.46)
+    height = 0.35)
 #)
+#main_map %>% ggtitle("2015 Residential theft per suburb \n City of Cape Town")
 ```
 
 ```{r plot-binary}
@@ -854,21 +856,23 @@ We start with a basic model and increase the complexity.
 <div class="alert alert-danger">
   <strong>WARNING!</strong> 
   
-GWR _**does not**_ accept `NaN` and `NA` values. We either need to cull those rows of interpolate values. Since this is 
+GWR _**does not**_ accept `NaN` and `NA` values. We either need to cull those rows or interpolate values. Since this exercise aims to demonstrate concepts and potential we interpolate. **This should not be standard practice.** 
+
 </div>
 
 ```{r replace nan }
 #library(dplyr)
 #library(imputeTS)
 
-
+#col.sp <- as(col, "Spatial")
+#col.sp <- as_Spatial(col)
 intp_col <- col 
 intp_col$CRIME <- na_interpolation(intp_col$CRIME, na.rm = FALSE)
 intp_col$AVMEDINC <- na_interpolation(intp_col$AVMEDINC, na.rm = FALSE)
 intp_col$GV2015VAL <- na_interpolation(intp_col$GV2015VAL, na.rm = FALSE)
-#intp_col$CRIME <- na.approx(intp_col$CRIME, na.rm = FALSE)
-#intp_col$AVMEDINC <- na.approx(intp_col$AVMEDINC, na.rm = FALSE)
-#intp_col$GV2015VAL <- na.approx(intp_col$GV2015VAL, na.rm = FALSE)
+#intp_col$AVBACH <- na.approx(intp_col$AVBACH, na.rm = FALSE)
+#intp_col$AVESTADist <- na.approx(intp_col$AVESTADist, na.rm = FALSE)
+#intp_col$AVAPREArea <- na.approx(intp_col$AVAPREArea, na.rm = FALSE)
 ```
 
 
@@ -880,11 +884,11 @@ colNA <- na.omit(col)
 #colNA.nb <- poly2nb(colNA, queen = T)  
 #colNA.wts <- nb2listw(colNA.nb, style = "W", zero.policy = TRUE)
 
-#col.sp <- as(col, "Spatial")
+
 #sf_cent <- st_centroid(col['geom'])
 #xy = st_coordinates(sf_cent)
 # GWR with Gauss
-crime.bw01 <- gwr.sel(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL, 
+crime.bw01 <- gwr.sel(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL,# + AVESTADist, 
                   data=intp_col, #adapt = TRUE, # data=col,
                   coords = cbind(intp_col$X, intp_col$Y))#cbind(xy[,1], xy[,2]))#
 ```
@@ -898,7 +902,7 @@ This is basic estimated bandwidth (`h`); the distance (in meters, because our da
 If we now `fit` with this search parameter.
 
 ```{r bw01-fit }
-gwr.fit1 <- gwr(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL,
+gwr.fit1 <- gwr(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL,# + AVESTADist,
                 data = intp_col, 
                 coords = cbind(intp_col$X, intp_col$Y),
                 bandwidth = crime.bw01, se.fit=T, hatmatrix=T)
@@ -991,14 +995,23 @@ Or we could visualize the difference
 ```{r plot-gwr-adapt }
 intp_col$bwadapt <- gwr.fit3$bandwidth
 
-plot(intp_col['bwadapt'], 
+plot(intp_col['bwadapt'], #intp_col['bwadapt'], 
      main = 'GWR bandwidth')#,#, border="lightgray", main=NA)
-     #col = col_locm[,1])
+     #col = intp_col['bwadapt'])
 ```
 
 ```{r gwr-names }
 names(gwr.fit3$SDF)
 ```
+gwr.fit3$SDF$intp_col.GV2015VAL_se
+
+```{r }
+dfree<-gwr.fit3$results$edf
+
+philly$pnhblk.t <- gwr.fit3$SDF$pnhblk/gwr.fit3$SDF$pnhblk_se
+
+philly$pnhblk.t.p<-2*pt(-abs(philly$pnhblk.t), dfree)
+
 
 `spgwr` has a suite of tests comparing OLS and GWR models under an inferential framework. The null in these tests is the OLS and thus a statistically significant test statistic indicates that the GWR provides a statistically significant improvement over an OLS in terms of its ability to match observed values. 
 
