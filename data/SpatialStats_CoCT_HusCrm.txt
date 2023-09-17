@@ -1,0 +1,24 @@
+
+##--Lattice Data with R. (City of Cape Town)
+
+
+#- layers
+
+#- City of Cape Town Open Data
+CoCT_subValuation 	-> CoCT general valuation at suburb-level 2012 and 2015 (csv)
+CoCT_suburbs		-> CoCT suburbs (polygon) [espg:4326]
+StatsSA_wards		-> Statistics South Africa census wards / tracts (polygon) [espg:3857]
+
+#- SAPS 
+SAPS_precincts		-> South African Police Service precincts (polygon) [espg:4326]
+SAPS_stations		-> South African Police Service stations (point) [espg:4326]
+SAPS_crime		-> 2014-2015 robbery and burgary at residential premises (csv)
+
+#- Census via wazimap
+Census2011_income	-> STATSSA 2011 annual household income (csv)
+Census2011_bachelor	-> STATSSA 2011 highest education level: number bachelors degree (csv)
+
+
+#- Lattice Data with R dataset
+SpatialStatsR		-> (polygon) [espg:32734] ##-- utm 34s 
+LatticeDataR		-> (polygon) [espg:32734] ##-- utm 34s 
