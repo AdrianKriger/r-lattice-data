@@ -1,0 +1,1035 @@
+---
+##-- arkriger: October 2023
+title: "Exploring Lattice Data with `R`"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+---
+<style> 
+p.comment {
+background-color: #DBDBDB;
+padding: 10px;
+border: 1px solid black;
+margin-left: 25px;
+border-radius: 5px;
+font-style: italic;
+}
+
+</style>
+<div class="alert alert-info"> <strong>NAME: </strong> _[write your name.surname between the brackets (like that name.surname)]_
+
+</div>  
+
+Welcome to this exercise which explores **_Lattice Data_**. 
+
+We we talk about lattice data we mean: observations from a random process sampled over a countable collection of spatial regions, and supplemented by a neighborhood structure. The observation locations can be regular (equally spaced grid) or irregular, and data at a particular location typically represent the entire region. _i.e.: census data is lattice data._
+
+This assignment is a brief tutorial on the _**spatial regression**_ functionality contained in the `R` package `spdep`. We will to start to learn some of the methods necessary to determine _**spatial autocorrelation**_ and later continue onto the `spgwr` package which explores _**geographically weighted regression**_.
+
+<div class="alert alert-block alert-success"> **Our focus is understanding concepts, the analysis, potential and application of these methods.** </div>
+
+We do not cover all the details of the `spdep` and `spgwr` packages. If you are unsure what the parameters for a particular function are or if you wish to explore other arguments related to a function, please consult the `help` files or the relevant package vignettes.
+
+In this assignment, we will work through: 
+
+&nbsp;&nbsp;&nbsp;**1. Exploratory Data Analysis**  
+&nbsp;&nbsp;&nbsp;**2. Defining Neighbors and Constructing a Weight Matrix**  
+&nbsp;&nbsp;&nbsp;**3. Moran's I test for Spatial Autocorrelation**  
+&nbsp;&nbsp;&nbsp;**4. Moran's I significance test through simulation**  
+&nbsp;&nbsp;&nbsp;**5. Moran's scatter plot**   
+&nbsp;&nbsp;&nbsp;**6. Correlogram**  
+&nbsp;&nbsp;&nbsp;**7. Local Indicators of Spatial Autocorrelation (LISA)**  
+&nbsp;&nbsp;&nbsp;**8. Ordinary Least Squares (OLS) Regression**  
+&nbsp;&nbsp;&nbsp;**9. Geographically Weighted Regresssion (GWR)**   
+<!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. $n$-fold cross Validation and   -->
+<!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b. Residual Mean Squared Error (rmse). -->
+
+<div class="alert alert-danger">
+  <strong>REQUIRED!</strong> 
+  
+You are required to insert your outputs and any comment into this document. The document you submit should therefore contain the existing text in addition to:
+
+ - Plots and other outputs from executing the code chunks
+ - Discussion of your plots and other outputs as well as conclusions reached.
+ - This should also include any hypotheses and assumptions made as well as factors that may affect your conclusions.
+</div>
+
+To help you  interpret and understand your resluts, please consult the following resources:
+
+|||
+|-|:---|
+|**Chapter 10 - 12**|Introduction to geographic information systems by Kang-tsung (2011).              |
+A copy of these are available on [Amathuba](https://amathuba.uct.ac.za/d2l/login?sessionExpired=0&target=%2fd2l%2fle%2flessons%2f30111%2ffolders%2f1057404) inside the `Resources` folder, Study Material & Books
+
+----
+
+```{r install }
+options(prompt="> ", continue="+ ", digits=3, width=70,  show.signif.stars=F, repr.plot.width=7, repr.plot.height=7)
+rm(list=ls())
+
+# Install necessary packages: You only need to run this part once
+##- install.packages(c("RColorBrewer", "classInt", "sp", sf", "ggplot2", "extrafont", "cowplot", spdep", "spgwr", "PerformanceAnalytics", "corrplot"))))
+
+library(knitr)
+library(RColorBrewer)  #color palettes
+library(classInt) 
+#library(sp)
+library(sf)  #simple features for spatial data
+library(corrplot)
+library(ggplot2)
+library(extrafont)
+library(cowplot)
+library(corrplot)
+library(Hmisc)
+library(maptools)
+library(spdep)  #spatial regression
+library(spgwr)  #geographically weighted regression
+library(PerformanceAnalytics)
+library(zoo)
+```
+
+```{r help }
+#- help
+help(package="spdep")
+```
+
+
+<div class="alert alert-success">
+  <strong>THE DATASET:</strong> 
+
+In this practical we will be working with South African Police Service (SAPS), Statistics South Africa (STATSSA) and the City of Cape Town (CoCT)  open data. The data set contains information on crime (combined residential burglaries and residential thefts) and property valuation as well as other variables specific to Cape Town, South Africa in 2015.  
+
+<br>
+    
+**In the spirit of Open Science and Open Data the creation of this dataset is available as a seperate document: [latticeSpatial](https://github.com/AdrianKriger/r-lattice-data/blob/main/latticeSpatial.ipynb)**. It is open for inquiry, exploration and welcomes contribution, criticism and review.
+
+<br>
+
+Unit of analysis: 777 suburbs in Cape Town, South Africa
+
+
+The variables contained in the dataset are:  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	OBJECTID   : polygon ID  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	OFC_SBRB_N : official suburb name  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	SHAPE_Leng : suburb perimeter  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	SHAPE_Area : suburb area   
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	OFFICIAL_SUBURB : suburb name carried over from property valuation dataset  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	NUM_RES_PROP : number residential properties sold.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	MED_LAND_EXTENT.m2 : median extent land (m^2)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	MED_TOT_BLD_AREA.m2 : median building area (m^2)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	GV2015VAL : 2015 general property valuation  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	X : x coordinate of suburb centroid  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	Y : y coordinate of suburb centroid   
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	AVESTADist : average distance to the local police station  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	AVAPREArea : average precinct area  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	AvePrecinctsLen : average precinct perimetre  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	ROBRes : residential robbery  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	BUGRes : residential burglary  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	CRIME : total theft  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	AVMEDINC : average median household income  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	BACH : number bachelors degrees  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	AVBACH : avergae number bachelors degrees  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	STA : police station  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	STAD : distances to the local police station  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	PREA : precinct area  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	PREL : precinct perimetre  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	WARD : official ward / track number  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	geom : suburb geometry
+
+<br>
+
+The dataset comes in the form of a `shapefile` within a `.geopackage` along with ALL the source material. Analysis will focus on `SHAPE_Area`, `GV2015_VAL`, `AVESTADist' 'AVAPREArea`, `CRIME`, `INCOME`, `AVBAC`.
+ 
+</div>
+
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 1.**  Why would we want to investigate the _**correlation**_ between the variables mentioned above? Who would use information related to the (spatial) relationship between crime, property valuation and income? 
+
+
+<p class="comment">
+[ Answer 1. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+## 1. Exploratory Data Analysis
+
+```{r load-data }
+col = st_read('./SpatialStats_CoCT_HusCrm.gpkg', layer='LatticeDataR')
+```
+
+```{r crs }
+st_crs(col)
+```
+
+<!-- # ```{r head } -->
+<!-- # head(col) -->
+<!-- # ``` -->
+
+```{r class }
+#- class of object
+class(col) # Class of object
+```
+
+```{r slot-names }
+#- Check the Components of the SpatialPolygonsDataFrame
+slotNames(columbus) 
+```
+
+```{r names }
+#- names of the columns in the dataset 
+names(col)
+```
+
+Notice the spatial aspect of the data; `geom` which represent the areas (each suburb) under study.
+
+```{r structure}
+#- for a deeper understanding of the dataset
+str(col)
+```
+
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 2.** What is the `espg` code of the coordinate reference system?
+
+<p class="comment">
+[ Answer 2. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+- **Question 3a.** Create a subset data from the coct (select relevant variables and generate summary statistics etc.). Select the numerical variables in columns 7 to 12 and store the subset data into coct_sub variable. 
+
+```{r answer3}
+##-- click in this cell and type your answer here. your answer must be between the ``` backticks ```
+
+coct_sub <- col[,c(4, 9:12, 15:16, 18)]
+
+```
+- **Question 3b.** Use the `summary()` function to print the summary statistics?
+
+```{r answer3b}
+##-- click in this cell and type your answer here. your answer must be between the ``` backticks ```
+
+summary(coct_sub)
+
+```
+- **Question 3c.** What is the mean, maximum and minimum variable for each data set?
+
+<p class="comment">
+[ Answer 3c. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+**Before we get to correlation lets first look at variation _within_ the variables of interest.** A quick way to do this is with a **histogram**. We add the `mean` (red) and `median` (blue) to help us understand the distribution 
+
+
+```{r hist-crime }
+hist(coct_sub$CRIME, 50, xlab = "Crime", main="")
+abline(v=mean(coct_sub$CRIME,na.rm = TRUE), col="red")
+abline(v=median(coct_sub$CRIME, na.rm = TRUE), col="blue")
+```
+```{r hist-income }
+hist(coct_sub$AVMEDINC, 50, xlab = "Income", main="")
+abline(v=mean(coct_sub$AVMEDINC), col="red")
+abline(v=median(coct_sub$AVMEDINC), col="blue")
+```
+```{r hist-prop-val }
+hist(coct_sub$GV2015VAL, 50, xlab = "Property Valuation", main="")
+abline(v=mean(coct_sub$GV2015VAL, na.rm = TRUE), col="red")
+abline(v=median(coct_sub$GV2015VAL, na.rm = TRUE), col="blue")
+```
+
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 4.** Comment on the `Crime`, `Income` and `Property Valuation`? Would you suggest `log` transforming the values? Your answer must be between 20 and 50 words per variable.
+
+<p class="comment">
+[ Answer 4. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+-----
+#### Correlation
+
+One of the goals of this exercise is to understand the **_relationship_** between a number of variables. To archive this aim we employ a `correlation matrix`, which is used to **investigate the dependence between multiple variables** at the same time. The result is a table containing the `correlation coefficients` between each variable and the others. 
+
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 5.** Print and plot the correlation matrix and correlation plot and discuss the what you observe?
+
+```{r correlation-matrix  }
+# correlation 
+coct_subdata <- st_drop_geometry(coct_sub)
+cor(coct_subdata) 
+```
+
+```{r correlation-plot}
+# Correlation plot using PerformanceAnalytic package
+suppressWarnings({
+chart.Correlation(coct_subdata, histogram=TRUE, pch=19)
+})
+```
+
+</style>
+<div class="alert alert-info"> <strong>HINT!</strong> You want to mention the _sign_ and _strength_ of the correlation </div> 
+
+<p class="comment">
+[ Answer 5. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+<div class="alert alert-warning"> <strong>TASK!</strong> </div>
+
+- **Question 6.** Execute the next three `code chunks / blocks` and comment on what you observe. What conclusion/s can you draw about the data distribution in the previous three plots? Motivate your answer.
+
+```{r plot}
+#- plot
+plot(col["CRIME"], lwd = 0.2)#, axes = TRUE)
+```
+
+<!-- # ```{r ggplot-fonts} -->
+<!-- # font_import() -->
+<!-- # loadfonts(device = "win") -->
+<!-- # ``` -->
+
+<!-- # ```{r ggplot } -->
+<!-- # #- ggplot -->
+<!-- # col %>%  -->
+<!-- #   ggplot() + -->
+<!-- #   geom_sf( -->
+<!-- #     aes(fill = ResCRIME),# / dwellings),  -->
+<!-- #     lwd = 0,  -->
+<!-- #     colour = "white") + -->
+<!-- #   scale_fill_gradientn( -->
+<!-- #     colors = c("#9DBF9E", "#FCB97D", "#A84268"), -->
+<!-- #     na.value = "grey80", -->
+<!-- #     limits = c(0, 1100), -->
+<!-- #     oob = scales::squish, -->
+<!-- #     #labels = scales::percent, -->
+<!-- #     name = "Residential Crime per Suburb" -->
+<!-- #     ) + -->
+<!-- #   theme_void() + -->
+<!-- #   theme( -->
+<!-- #     # legend.justification defines the edge of the legend that the legend.position coordinates refer to -->
+<!-- #     legend.justification = c(0, 1), -->
+<!-- #     # Set the legend flush with the left side of the plot, and just slightly below the top of the plot -->
+<!-- #     legend.position = c(0.9, .92) -->
+<!-- #     ) + -->
+<!-- #   theme( -->
+<!-- #     text = element_text(family = "Palatino-Bold"), -->
+<!-- #     legend.title = element_text(family="Palatino-Bold", size = 10), #element_text(family = "Candara-Bold", size = 10), -->
+<!-- #     legend.text = element_text(family = "Palatino-Medium", size = 10) -->
+<!-- #     ) -->
+<!-- # ``` -->
+
+```{r ggplot-with-inset}
+## Make main map object --not correct [https://upgo.lab.mcgill.ca/2019/12/13/making-beautiful-maps/]
+
+main_map <- 
+  col %>% 
+  ggplot() +
+  geom_sf(
+    aes(fill = CRIME),# / dwellings),
+    lwd = 0.1, 
+    colour = "white"
+    ) +
+  geom_rect(
+    xmin = 255000,
+    ymin = 6235000,
+    xmax = 290000,
+    ymax = 6247000,
+    fill = NA, 
+    colour = "lightgrey",
+    linewidth = 0.2
+  ) +
+  scale_fill_gradientn(
+    colors = c("#9DBF9E", "#FCB97D", "#A84268"),
+    na.value = "grey80",
+    limits = c(0, 1100),
+    oob = scales::squish,
+    #labels = scales::percent,
+    name = "Residential Crime (per suburb)"
+    ) +
+  coord_sf(expand = FALSE) +
+  theme_void() +
+  theme(
+    legend.justification = c(0, 1), #c(0, 1),
+    legend.position = 'right' # #c(0.7, 0.8)#
+    ) +
+  theme(
+    text = element_text(family = "NimbusMon", face="bold"),
+    legend.title = element_text(family = "NimbusMon", face="bold", size = 10),
+    legend.text = element_text(family = "NimbusMon", face="plain", size = 10)
+    )  
+
+
+## Assemble final map with inset
+main_map %>% 
+  ggdraw() +
+  draw_plot(
+    {
+      main_map + 
+        coord_sf(
+          xlim=c(255000,290000),
+          ylim=c(6235000,6247000),
+          expand = FALSE) +
+          # Set a completely blank theme, to get rid of all background and axis elements
+        #panel_border(color = 'white')
+        theme(legend.position = "none", plot.background = element_blank())
+      },
+    x = 0.52, 
+    y = 0.29,
+    width = 0.46, 
+    height = 0.46)
+#)
+```
+
+```{r plot-binary}
+# visualizing a variable - Binary classification
+plot(col['CRIME'], main = NA, #"City of Cape Town: Residential Crime, 2015 \n (cases per suburb)", 
+     col = ifelse(col$CRIME > 400, 
+                                              "lightgrey", "red"))
+title(main="City of Cape Town:\n Residential Crime, 2015 \n (cases per suburb)" , 
+      adj = 0.9, line = 0.8)
+# adding a legend to the graph
+legend(x = "right", bty = 'n',
+       #box.col = NA,
+       #bg = NA, box.lwd = NA , 
+       title="Res. Crime", legend=c("ResCRIME > 400", "ResCRIME < 400"), 
+       fill = c("lightgrey", "red")
+)
+```
+
+
+
+<p class="comment">
+[ Answer 6. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+<br>
+This is an excellent opportunity to highlight the challenges with using choropleth maps. Choropleth maps often give a false impression of an abrupt change at the boundaries of shaded units. These types of maps are also not suitable for showing total values.
+
+These next series of plots illustrate three classification schemes. `Equal`, `Quantile` and `Jenks`.
+
+<br>
+
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 7.** Execute the following three `code blocks / chunks` and discuss the results.
+
+```{r brewer }
+# You could view your data using a more detailed classification
+# Select Color scale - Create a Palette
+pal = brewer.pal(7,"Greens") # Makes a 7-color spectral palette
+display.brewer.pal(7, "Greens")  # This displays the colors
+```
+
+```{r break-intervals}
+# classifying Data using classIntervals() 
+# create class breaks 
+brks.eq = classIntervals(col$CRIME, n = 7, style = "equal")
+brks.qt = classIntervals(col$CRIME, n = 7, style = "quantile")
+brks.jk = classIntervals(col$CRIME, n = 7, style = "jenks")
+# Other style options "fixed", "sd", "pretty", "kmeans", "hclust", "bclust" and "fisher"
+
+# Link the color pallette to the class breaks (categories) using findColours(CATEGORIES, PALETTE)
+brks.eqcol = findColours(brks.eq,pal)
+brks.qtcol = findColours(brks.qt,pal)
+brks.jkcol = findColours(brks.jk,pal)
+```
+
+```{r plot-equal}
+# Plot with Equal Breaks
+plot(col['CRIME'],  col=brks.eqcol, lwd = 0.1, main=NA)
+     #border=NA,  #"black")
+legend("topleft", leglabs(round(brks.eq$brks, digits=1)), 
+       fill=pal, cex=0.8, bty="n")
+title(main="City of Cape Town: Residential Crime per suburb, 2015 \n (Equal breaks)")
+```
+
+```{r plot-quantile}
+# Plot with Quantile Breaks
+plot(col['CRIME'],  col=brks.qtcol, lwd = 0.1, main=NA)
+     #border=NA,  #"black") 
+legend("topleft", leglabs(round(brks.eq$brks, digits=1)), 
+       fill=pal, cex=0.8, bty="n")
+title(main="City of Cape Town: Residential Crime per suburb, 2015 \n (Quantile breaks)")
+```
+
+
+```{r plot-jenks}
+# Plot with Equal Breaks
+plot(col['CRIME'],  col=brks.jkcol, lwd = 0.1, main=NA)
+     #border=NA,  #"black")
+legend("topleft",leglabs(round(brks.jk$brks, digits=1)), 
+       fill=pal, cex=0.8, bty="n")
+title(main="City of Cape Town: Residential Crime per suburb, 2015 \n (Equal breaks)")
+```
+</style>
+<div class="alert alert-info"> <strong>HINT!</strong> Comment on the average number of links and list the number of least and most connected regions
+</div> 
+
+<p class="comment">
+[ Answer 7. click in this cell and type your answer here. your answer must discuss all three classification techniques and be between the outer [] brackets  
+- Equal:  
+- Quantile:  
+- Jenks
+] </p>
+
+## 2. Defining Neighbors and Constructing a Weight Matrix
+
+In order to determine whether suburb attributes are _**spatially autocorrelated**_ or not, the **neighbours of each suburb need to be defined**. Each neighbor is then _given a weight that distinguishes it from the rest of the suburbs_ in the study area. 
+
+By weighting the neighbors, the degree to which a given suburb attribute is spatially correlated with itself across the study area can then be quantified _(i.e. global spatial autocorrelation)_. 
+
+In addition, the degree to which the neighbors’ attributes are related to a given suburb or not can be computed _(i.e. local spatial autocorrelation)_.
+
+We will only discuss one method of defining neighbors. **`Queens Weights`**. You are encouraged to explore **`Rook Weights`**.
+
+<div class="alert alert-warning"> <strong>TASK!</strong> </div>
+
+- **Question 8.** Execute the following three `code blocks / chunks` and discuss the results
+
+```{r define-weight }
+#- neighbourhood with queen's case:
+col.nb <- poly2nb(col, queen = T)
+
+#Define a network grid
+col.wts <- nb2listw(col.nb, zero.policy = TRUE, style="W")
+```
+
+```{r summary-neigh}
+summary(col.nb)
+```
+
+```{r summary-weights }
+# Explore the weight matrix
+#summary(col.wts, zero.policy=TRUE)  
+print(col.wts, zero.policy=TRUE)  
+```
+
+```{r weight-plot }
+##Visualize 
+
+##Extract the Geometry
+#col.geom = st_geometry(col)
+##Build the centroid geometry
+coords = st_coordinates(st_centroid(col))
+
+plot(col['CRIME'], main = NA,
+     col = "lightgray",
+     border = "white", #fill = NA,
+     reset = FALSE)
+plot(col.nb, coords,
+     add = TRUE,
+     col = 3,
+     lwd = 2)
+```
+
+<p class="comment">
+[ Answer 8. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+<br>
+
+<div class="alert alert-success">
+  <strong>Why determine spatial autocorrelation?</strong> 
+
+Spatial autocorrelation captures the degree to which near and distant things are related. We want to know how variables are connected and their relationship. 
+
+<br>
+    
+When we execute **_regression analysis_** we assume observations are _independent_. This is not always true. We can see this within the geospatial community where we typically describe a process as a function of location; i.e.: $Z(x,y)$. Consider the general form of an Ordinary Least Squares trend surface:
+
+$$
+    Z(x,y) = 𝜷_0 + 𝜷_1x + 𝜷_2y + ϵ
+$$
+The locations $(x,y)$ are fixed and not random, but the attribute values $Z$ are assumed to have a random component. Our sample observations are not independent if they are spatially autocorrelated.
+
+<br>
+What this means is; if we where predicting elevation or crop yield or the prevalence of malaria the **_general trend_** could be captured with all the terms containing $𝜷$ **_without accounting for a spatially autocorrelated random processes_**, such as localized topographic changes, clusters of different management practices or regional prevention and treatment campaigns.
+
+When our observations are spatially autocorrelated our predictions will be false and we have to restructure our residuals ($ϵ$) with a variogram. _(see [r-spatial-stats](https://adriankriger.github.io/r-spatial-stats/) next week)_
+ 
+<br>
+We test for spatial autocorrelation to know whether a variogram in necessary. 
+</div>
+
+
+## 3. Moran's I test for spatial autocorrelation
+
+The most common method for testing _**spatial autocorrelation**_ is by using the Global Moran’s I test. This method **compares how similar each polygon is with its neighbours** and averages all these comparisons. The result is one value that will yield the overall impression of how a given variable is correlated with itself across the study area
+
+|||
+|-|:---|
+|**`Null Hypothesis`**|There is no spatial autocorrelation for the CRIME variable.|
+|**`Alt Hypothesis`**|There is spatial autocorrelation for the CRIME variable|
+
+The easy way to calculate Moran’s I statistic is simply though the `moran.test` function. We execute the function with `zero.policy = TRUE` and `na.action = na.pass` to account for no-data values while `randomisation = T` tells us that the attribute being analyzed (crime in the City of Cape Town) is randomly distributed _(Is it? ---what does the histogram above say?)_.
+
+```{r global-moran }
+m = length(col$CRIME)
+s = Szero(col.wts)
+
+#Apply a coordinate system
+#crs(col.net) <- st_crs(col)
+
+globalMoran <- moran.test(col$CRIME, col.wts, zero.policy = TRUE,  
+                     randomisation = T, 
+                     na.action = na.pass)#, n = m, S0 = s) #
+#globalMoran
+```
+
+```{r print-moran }
+#- print
+globalMoran
+```
+
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 8.** What conclusion can you draw from the `Moran I statistic` and the `p-value` for the Global Moran's I? Your answer **must include** comments on whether you accept or reject the the `Null or Alt Hypothesis`.
+
+<p class="comment">
+[ Answer 8. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+#### - Monte-Carlo (MC) method
+
+The analytical approach to the Moran’s I benefits from being fast. But it may be sensitive to irregularly distributed polygons. A safer approach to _**hypothesis testing**_ is to run an MC simulation using the `moran.mc()` function. The `moran.mc()` takes an extra argument `n`, the number of simulations
+
+
+```{r monte-carlo }
+#globalMoran <- moran.test(col$CRIME, col.wts, zero.policy = TRUE,  
+                     #randomisation = T, 
+                     #na.action = na.pass)#, n = m, S0 = s) #
+MC <- moran.mc(col$CRIME, col.wts, zero.policy = TRUE,  
+                     nsim=999, #randomisation = T, 
+                     #na.action = na.pass, 
+               alternative ="greater")
+
+# View results (including p-value)
+MC
+```
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 9.** Does the `Monte-Carlo` simulation agree with the traditional `Moran's I`.
+
+<p class="comment">
+[ Answer 9. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+**We can `plot` the distribution of the `MC` methods Moran I values we expect had crime been randomly distributed across the suburbs** 
+
+```{r plot-mc }
+#- print
+# Plot the Null distribution (note that this is a density plot instead of a histogram)
+plot(MC)
+```
+
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 9.** NOTICE: The `0.8` observed statistic falls all the way to the right. What does this mean? 
+
+</style>
+<div class="alert alert-info"> <strong>HINT!</strong> What do the positive and negative Moran statistic indicate?
+
+</div> 
+
+<p class="comment">
+[ Answer 9. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+
+## 5. Moran’s scatter plot
+
+We can visualize Morans statistic with a scatterplot. The plot places our variable of interest on the x-axis (crime) and the spatially weighted sum of neighbor values (i.e. spatially lagged values) on the y axis. We can think of the Global Moran’s I as a linear relationship between these (drawn as a slope in the figure).
+
+```{r moran-scatter }
+# moran Scatterplot
+
+#colNA = col[!is.na(col$CRIME),]
+#colNA.nb = poly2nb(colNA, queen = T)  
+#colNA.wts <- nb2listw(colNA.nb, style = "W", zero.policy = TRUE)
+
+colsmp <- moran.plot(col$CRIME, col.wts, zero.policy = TRUE,
+                     labels = as.character(col.wts$OBJECTID),#OBJECTID), 
+                     xlab = "CRIME", ylab = "Lag of CRIME")
+```
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 9.** What is the purpose of the Global Moran I scatter plot? What does it represent? Discuss the Global Moran's I scatter plot above.
+
+<p class="comment">
+[ Answer 9. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+## 6. Correlogram
+
+Another great way to visualize Morans statistic is a correlogram. A correlogram illustrates autocorrelation as a function of distance. As distance between suburbs (x-axis) increases, how does our spatial autocorrelation change (y-axis)?
+
+```{r correl-plot }
+#- correlogram
+col_cor8 <- sp.correlogram(col.nb, col$CRIME, order = 8, 
+                           method = "I", zero.policy = TRUE)
+#col_cor5 
+#- plot correlogram
+plot(col_cor8, main = "Correlelogram of CRIME")
+```
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 10.** What conclusion/s can you draw from the correlogram plot? 
+
+<p class="comment">
+[ Answer 10. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+## 7. Local Indicators of Spatial Autocorrelation (LISA)
+
+Like Global Moran’s I, the **Local Moran’s I statistic** can be used to _quantify spatial patterns occurring across a given area_. However, instead of producing one value that encompasses the entire study area, the **Local Moran’s I method produces a statistic for each polygon in the study area**.
+
+The advantage of this localized method is that it shows exactly which polygons are similar or different to the objects in their neighborhood. In other words, it identifies where spatial autocorrelation occurs as well as the level of significance that is experienced.
+
+```{r local-moran }
+#- local Moran's I
+col_locm <- localmoran(col$CRIME, col.wts, zero.policy = TRUE,  
+                     na.action = na.pass)
+summary(col_locm)
+```
+
+We get a number of useful statistics from the local model:
+
+> Ii    : local moran statistic
+> E.Ii  : expectation of local moran statistic
+> Var.Ii: variance of local moran statistic
+> Z.Ii  : standard deviate of local moran statistic
+> Pr()  : p-value of local moran statistic
+
+We can plot values these to visualize how and the degree _(strength)_ of the connections / relationships. 
+
+### - LISA clusters
+
+LISA clusters identify localized regions where values are strongly positively or negatively associated with one another. We group suburbs with a `p-value` significance threshold of `0.05`
+
+<div class="alert alert-warning"> <strong>TASK!</strong> </div>
+
+- **Question 11.** Execute the following `code chunk / block` and discuss the result. 
+```{r plot-local-moran-clusters }
+quadrant <- vector(mode="numeric", length=nrow(col_locm))
+
+# centers the variable of interest around its mean
+m.crime <- col$CRIME - mean(col$CRIME)     
+
+# centers the local Moran's around the mean
+m.local <- col_locm[,1] - mean(col_locm[,1])    
+
+# significance threshold
+signif <- 0.05 
+
+# builds a data quadrant
+quadrant[m.crime >0 & m.local>0] <- 4  
+quadrant[m.crime <0 & m.local<0] <- 1      
+quadrant[m.crime <0 & m.local>0] <- 2
+quadrant[m.crime >0 & m.local<0] <- 3
+quadrant[col_locm[,5]>signif] <- 0   
+
+# plot in r
+brks <- c(0,1,2,3,4)
+colors <- c("white", "blue", rgb(0,0,1, alpha=0.4), rgb(1,0,0,alpha=0.4), "red")
+plot(col['CRIME'], border="lightgray", main=NA,
+     col=colors[findInterval(quadrant, brks, all.inside=FALSE)])
+#box()
+legend("bottomleft", legend =c("insignificant", "low-low", 
+                               "low-high", "high-low", "high-high"),
+       fill=colors, bty="n")
+title(main="LISA clusters. City of Cape Town Crime (2015)")
+```
+</style>
+<div class="alert alert-info"> <strong>HINT: </strong> What do the `low-low', low-high`, `high-low`, etc. mean?
+
+</div>  
+
+<p class="comment">
+[ Answer 11. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+### -  Local Moran Plot
+
+Similarly we can plot the Local Moran statistic (`Ii`) which indicates that the suburb is surrounded by units with similar values.
+
+```{r plot-moran-Ii }
+col$col_locm.Ii <- col_locm[,1]
+plot(col['col_locm.Ii'], main = 'Local Morans statistic (Ii)')#,#, border="lightgray", main=NA)
+     #col = col_locm[,1])
+```
+
+```{r scale-crime }
+CRIME <- scale(col$CRIME) #%>% as.vector()
+summary(CRIME)
+```
+
+```{r }
+col$lag_sCRIME <- lag.listw(col.wts, CRIME, zero.policy = TRUE, NAOK = TRUE)
+summary(col$lag_sCRIME)
+```
+
+## 8. Ordinary Least Squares (OLS) Regression
+
+Our aim is to examine the relationship between crime and suburb characteristics. 
+
+Normally we take a dependent variable (crime) and try and explain the variation scores using an independent variable or a suite of uncorrelated and normally distributed independent variables (household income. property valuation). The strength and direction of association is indicated by the regression coefficients, with one coefficient given for each variable in the dataset.
+
+Lets execute a basic OLS regression for crime per suburb on the following independent variables: Property Valuation and Income.
+
+```{r ols-r }
+# OLS Regression to predict CRIME using AVEMEDINC and GV2015VAL as independent variables
+# https://crd230.github.io/gwr.html#ordinary_least_squares_regression
+reg1 <- lm(col$CRIME ~ col$AVMEDINC + col$GV2015VAL, na.action=na.exclude)
+```
+
+```{r ols-summary }
+summary(reg1)
+```
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 12.** What conclusion can you draw from the `Multiple R-`, `Adjusted R-squared` and `p-` values? Additionally comment on the _`sign`_ of the independent variables. 
+
+<p class="comment">
+[ Answer 12. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+
+```{r ols-morans-residuals }
+#- Moran's I on the residuals 
+moran.test(residuals(reg1), col.wts, alternative="two.sided", 
+           zero.policy = TRUE,  na.action = na.exclude)
+```
+
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 13.** Is there autocorrelation in the residuals? Substantiate your answer.
+
+<p class="comment">
+[ Answer 13. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+**If we plot the standardized residuals plotted against the fitted values, we can see that as there is no clear pattern in the cloud.
+
+```{r ols-regression-plot }
+plot(reg1, which=3)
+```
+**Similar to the LISA cluster; the `OLS residuals` however better describe whether a spatial pattern exists or not** 
+
+```{r }
+# Plot the residuals
+res <- residuals(reg1)
+classes_sd <- classIntervals(res, n=4, style = "sd", rtimes = 1, dataPrecision = 3)
+res.palette <- colorRampPalette(c("blue","white","red"), space = "rgb")
+pal <- res.palette(4)
+cols <- findColours(classes_sd,pal)
+
+par(mar=rep(0,4))
+plot(col['CRIME'], col=cols, main="Residuals from OLS Model")#, border="grey")
+legend("bottomright",cex=0.7,fill=attr(cols,"palette"),bty="n",
+       legend=names(attr(cols, "table")),title="Residuals from OLS Model",ncol=4)
+
+```
+
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 14.** Elaborate on your answer from 13 above. Is there autocorrelation in the residuals? Substantiate your answer.
+
+<p class="comment">
+[ Answer 14. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+## 9. Geographically Weighted Regresssion (GWR)
+
+GWR is an outgrowth of OLS; and adds a level of modeling sophistication by allowing the relationships between the independent and dependent variables to vary by location.
+
+Without getting into to much Math, since this is meant to be a brief introduction, the parameters in the GWR are estimated by weighted least squares and the role of this weight matrix is to **give more value to observations that are close to any one dependent variable**; as it is assumed that observations that are close will influence each other more than those that are far away _(Tobler’s Law)_.
+
+Our three options with GWR are: 
+- the kernel density function assigning weights;
+- the bandwidth `h` _---which determines the degree of distance decay---_ and
+- who to count as neighbors.
+
+We start with a basic model and increase the complexity.
+
+<div class="alert alert-danger">
+  <strong>WARNING!</strong> 
+  
+GWR _**does not**_ accept `NaN` and `NA` values. We either need to cull those rows of interpolate values. Since this is 
+</div>
+
+```{r replace nan }
+#library(dplyr)
+#library(imputeTS)
+
+
+intp_col <- col 
+intp_col$CRIME <- na_interpolation(intp_col$CRIME, na.rm = FALSE)
+intp_col$AVMEDINC <- na_interpolation(intp_col$AVMEDINC, na.rm = FALSE)
+intp_col$GV2015VAL <- na_interpolation(intp_col$GV2015VAL, na.rm = FALSE)
+#intp_col$CRIME <- na.approx(intp_col$CRIME, na.rm = FALSE)
+#intp_col$AVMEDINC <- na.approx(intp_col$AVMEDINC, na.rm = FALSE)
+#intp_col$GV2015VAL <- na.approx(intp_col$GV2015VAL, na.rm = FALSE)
+```
+
+
+```{r gwr }
+#- https://crd230.github.io/gwr.html
+
+colNA <- na.omit(col)
+#colNA = col[!is.na(col),]
+#colNA.nb <- poly2nb(colNA, queen = T)  
+#colNA.wts <- nb2listw(colNA.nb, style = "W", zero.policy = TRUE)
+
+#col.sp <- as(col, "Spatial")
+#sf_cent <- st_centroid(col['geom'])
+#xy = st_coordinates(sf_cent)
+# GWR with Gauss
+crime.bw01 <- gwr.sel(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL, 
+                  data=intp_col, #adapt = TRUE, # data=col,
+                  coords = cbind(intp_col$X, intp_col$Y))#cbind(xy[,1], xy[,2]))#
+```
+
+```{r gwr-bandwidth }
+crime.bw01
+```
+
+This is basic estimated bandwidth (`h`); the distance (in meters, because our data are projected in a system measured in meters), which the weighting function will search, and include all observations within this radius. 
+
+If we now `fit` with this search parameter.
+
+```{r bw01-fit }
+gwr.fit1 <- gwr(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL,
+                data = intp_col, 
+                coords = cbind(intp_col$X, intp_col$Y),
+                bandwidth = crime.bw01, se.fit=T, hatmatrix=T)
+```
+
+```{r print-fit1 }
+gwr.fit1
+```
+We can increase the change the weighting function to `bi-square` and `fit` another `regression` to compare.
+
+<div class="alert alert-warning"> <strong>TASK!</strong> </div>
+
+- **Question 14.** Execute the following two `code chunks / blocks` and discuss the result. 
+
+
+```{r bi-sqaure }
+
+crime.bw02 <- gwr.sel(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL, 
+                  data=intp_col, gweight = gwr.bisquare, # data=col,
+                  coords = cbind(intp_col$X, intp_col$Y))#cbind(xy[,1], xy[,2]))#
+
+gwr.fit2 <- gwr(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL,
+                data = intp_col, 
+                coords = cbind(intp_col$X, intp_col$Y),
+                bandwidth = crime.bw02, gweight = gwr.bisquare,
+                se.fit=T, hatmatrix=T)
+```
+
+```{r print-bw02 }
+crime.bw02
+```
+
+```{r print-fit02 }
+gwr.fit2
+```
+
+</style>
+<div class="alert alert-info"> <strong>HINT: </strong> How does `crime.bw01` compare with `crime.bw02`.  How does `gwr.fit1` compare with `gwr.fit2`.  
+
+</div>
+
+<p class="comment">
+[ Answer 14. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+#### - Adaptive kernel
+
+The GWR models we ran above yielded a fixed distance to search for neighbors to include in the local regression. But there are places in our data where suburbs are more densely occurring. This means that in some areas, specifically along Voortrecker Rd. heading east and Main Rd. heading south, we'll include a larger number of neighboring suburbs in the OLS compared to other areas, such as large areas on the periphery of the city’s boundaries.
+
+In this case, an adaptive kernel is suitable.
+
+```{r adapt }
+
+crime.bw03 <- gwr.sel(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL, 
+                  data=intp_col, adapt = TRUE, # data=col,
+                  coords = cbind(intp_col$X, intp_col$Y))#cbind(xy[,1], xy[,2]))#
+```
+
+```{r bw03 }
+
+crime.bw03
+```
+
+Unlike the previous `h` this value is NOT a distance but the proportion of all cases which the weighting function will search, and include this fraction of observations in a model for each tract. The bandwidth distance will change according to the spatial density of features in the input feature class.
+
+<div class="alert alert-warning"> <strong>TASK!</strong> </div>
+
+- **Question 15.** Execute the following two `code chunks / blocks` and discuss the result.
+
+
+```{r fit-adapt }
+gwr.fit3 <- gwr(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL,
+                data = intp_col, 
+                coords = cbind(intp_col$X, intp_col$Y),
+                adapt= crime.bw03, se.fit=T, hatmatrix=T)
+```
+
+
+```{r print-fit03 }
+gwr.fit3
+```
+
+**We can see how `adapt` harvested different search distances across our study area 
+
+```{r print fit03.bw }
+gwr.fit3$bandwidth
+```
+Or we could visualize the difference
+
+```{r plot-gwr-adapt }
+intp_col$bwadapt <- gwr.fit3$bandwidth
+
+plot(intp_col['bwadapt'], 
+     main = 'GWR bandwidth')#,#, border="lightgray", main=NA)
+     #col = col_locm[,1])
+```
+
+```{r gwr-names }
+names(gwr.fit3$SDF)
+```
+
+`spgwr` has a suite of tests comparing OLS and GWR models under an inferential framework. The null in these tests is the OLS and thus a statistically significant test statistic indicates that the GWR provides a statistically significant improvement over an OLS in terms of its ability to match observed values. 
+
+<div class="alert alert-warning"> <strong>TASK!</strong> </div>
+
+- **Question 15.** Execute the following three `code chunks / blocks` that tests GWR and discuss the result.
+
+
+</div>
+
+<p class="comment">
+[ Answer 15. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+
+```{r bfc }
+BFC02.gwr.test(gwr.fit3)
+```
+```{r lmz-test }
+LMZ.F1GWR.test(gwr.fit3)
+```
+
+```{r lmz2 }
+LMZ.F2GWR.test(gwr.fit3)
+```
+<div class="alert alert-danger">
+  <strong>STOP HERE! </strong> 
+  
+</div>
+
+```{r lmz3 }
+LMZ.F3GWR.test(gwr.fit3)
+```
+
