@@ -2,7 +2,7 @@
 
 Welcome to this Lattice Data with R Assignment!
 
-In this exercise, we will explore the concepts and applications of spatial autocorrelation and extend our understanding of Ordinary Least Sqaures Regression (OLS) with Geographically Weighted Regression. We investigate:
+In this exercise, we will explore the concepts and applications of spatial autocorrelation and extend our understanding of Ordinary Least Squares Regression (OLS) with Geographically Weighted Regression. We investigate:
 
 &nbsp;&nbsp;&nbsp;**1) Spatial Autocorrelation**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. Neighbors and Weight Matrices  
