@@ -700,13 +700,13 @@ summary(col_locm)
 
 We get a number of useful statistics from the local model:
 
-> Ii    : local moran statistic
-> E.Ii  : expectation of local moran statistic
-> Var.Ii: variance of local moran statistic
-> Z.Ii  : standard deviate of local moran statistic
+> Ii    : local moran statistic  
+> E.Ii  : expectation of local moran statistic  
+> Var.Ii: variance of local moran statistic  
+> Z.Ii  : standard deviate of local moran statistic  
 > Pr()  : p-value of local moran statistic
 
-We can plot values these to visualize how and the degree _(strength)_ of the connections / relationships. 
+We can `plot()` these values to visualize how and the degree _(strength)_ of the connections / relationships. 
 
 ### - LISA clusters
 
@@ -849,7 +849,9 @@ legend("bottomright",cex=0.7,fill=attr(cols,"palette"),bty="n",
 <div class="alert alert-danger">
   <strong>WARNING!</strong> 
   
-All the previous function accepted a `zero.policy = TRUE` and / or  `na.action = na.exclude` which allowed us to work around not having a a complete data set (`NaN` and `NA` values). Geographically Weighted Regression (GWR) _**does not**_ accept `NaN` and `NA` values. In order to proceed onto GWR we either need to cull those rows or interpolate values. Since this exercise aims to demonstrate concepts and potential we interpolate. **This should not be standard practice.** 
+All the previous function accepted a `zero.policy = TRUE` and / or  `na.action = na.exclude` which allowed us to work around not having a complete data set (`NaN` and `NA` values). Geographically Weighted Regression (GWR) _**does not**_ accept `NaN` and `NA` values. 
+
+In order to proceed onto GWR we either need to cull no-data rows or interpolate values. Since this exercise aims to demonstrate concepts and potential we interpolate. **This should not be standard practice.** 
 
 </div>
 
