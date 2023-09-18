@@ -2,9 +2,9 @@
 ##-- arkriger: October 2023
 title: "Exploring Lattice Data with `R`"
 output:
+  html_notebook: default
   html_document:
     df_print: paged
-  html_notebook: default
 ---
 <style> 
 p.comment {
@@ -55,7 +55,7 @@ You are required to insert your outputs and any comment into this document. The 
  - This should also include any hypotheses and assumptions made as well as factors that may affect your conclusions.
 </div>
 
-To help you  interpret and understand your resluts, please consult the following resources:
+To help you  interpret and understand your results, please consult the following resources:
 
 |||
 |-|:---|
@@ -84,6 +84,7 @@ library(corrplot)
 library(Hmisc)
 library(maptools)
 library(spdep)  #spatial regression
+library(sfdep)  #spatial regression
 library(spgwr)  #geographically weighted regression
 library(PerformanceAnalytics)
 library(zoo)
@@ -201,7 +202,7 @@ str(col)
 ```{r answer3}
 ##-- click in this cell and type your answer here. your answer must be between the ``` backticks ```
 
-coct_sub <- col[,c(4, 9:12, 15:16, 18)]
+coct_sub <- col[,c(4, 9, 12:14, 17:18, 20)]
 
 ```
 - **Question 3b.** Use the `summary()` function to print the summary statistics?
@@ -223,14 +224,16 @@ summary(coct_sub)
 
 ```{r hist-crime }
 hist(coct_sub$CRIME, 50, xlab = "Crime", main="")
-abline(v=mean(coct_sub$CRIME,na.rm = TRUE), col="red")
+abline(v=mean(coct_sub$CRIME, na.rm = TRUE), col="red")
 abline(v=median(coct_sub$CRIME, na.rm = TRUE), col="blue")
 ```
+
 ```{r hist-income }
 hist(coct_sub$AVMEDINC, 50, xlab = "Income", main="")
 abline(v=mean(coct_sub$AVMEDINC), col="red")
 abline(v=median(coct_sub$AVMEDINC), col="blue")
 ```
+
 ```{r hist-prop-val }
 hist(coct_sub$GV2015VAL, 50, xlab = "Property Valuation", main="")
 abline(v=mean(coct_sub$GV2015VAL, na.rm = TRUE), col="red")
@@ -405,6 +408,7 @@ legend(x = "right", bty = 'n',
 </p>
 
 <br>
+
 This is an excellent opportunity to highlight the challenges with using choropleth maps. Choropleth maps often give a false impression of an abrupt change at the boundaries of shaded units. These types of maps are also not suitable for showing total values.
 
 These next series of plots illustrate three classification schemes. `Equal`, `Quantile` and `Jenks`.
@@ -840,6 +844,56 @@ legend("bottomright",cex=0.7,fill=attr(cols,"palette"),bty="n",
 [ Answer 14. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
 </p>
 
+#### - Missing Values
+
+<div class="alert alert-danger">
+  <strong>WARNING!</strong> 
+  
+All the previous function accepted a `zero.policy = TRUE` and / or  `na.action = na.exclude` which allowed us to work around not having a a complete data set (`NaN` and `NA` values). Geographically Weighted Regression (GWR) _**does not**_ accept `NaN` and `NA` values. In order to proceed onto GWR we either need to cull those rows or interpolate values. Since this exercise aims to demonstrate concepts and potential we interpolate. **This should not be standard practice.** 
+
+</div>
+
+**Lets once again work with a `subset` of the dataset.** And we do an extremely basic linear interpolation via `na.approx()`. First lets have a look at what is missing.
+
+```{r mice }
+#library(mice)
+library(VIM)
+
+coct_sub <- col[,c(4, 9:14, 17:18, 20, 26)]
+
+#md.pattern(coct_sub, rotate.names = TRUE)
+summary(aggr(coct_sub))
+
+```
+
+
+**Looking at the _missingness_ pattern shows that there are 142 _missing_ values in total.** All 142 from `GVAL2015`  Moreover, there are 635 (81.$\%$) completely observed rows and 142 rows ($18.3\%$) with 1 _missings_.
+
+
+```{r impute }
+intp_col <- coct_sub
+intp_col$GV2015VAL <- na.approx(coct_sub$GV2015VAL, rule = 2)
+summary(aggr(intp_col))
+```
+
+**Now we can continue**
+
+
+<!-- ```{r replace nan } -->
+<!-- #library(dplyr) -->
+<!-- #library(imputeTS) -->
+
+<!-- #col.sp <- as(col, "Spatial") -->
+<!-- #col.sp <- as_Spatial(col) -->
+<!-- intp_col <- col  -->
+<!-- intp_col$CRIME <- na_interpolation(intp_col$CRIME, na.rm = FALSE) -->
+<!-- intp_col$AVMEDINC <- na_interpolation(intp_col$AVMEDINC, na.rm = FALSE) -->
+<!-- intp_col$GV2015VAL <- na_interpolation(intp_col$GV2015VAL, na.rm = FALSE) -->
+<!-- #intp_col$AVBACH <- na.approx(intp_col$AVBACH, na.rm = FALSE) -->
+<!-- #intp_col$AVESTADist <- na.approx(intp_col$AVESTADist, na.rm = FALSE) -->
+<!-- #intp_col$AVAPREArea <- na.approx(intp_col$AVAPREArea, na.rm = FALSE) -->
+<!-- ``` -->
+
 ## 9. Geographically Weighted Regresssion (GWR)
 
 GWR is an outgrowth of OLS; and adds a level of modeling sophistication by allowing the relationships between the independent and dependent variables to vary by location.
@@ -853,33 +907,21 @@ Our three options with GWR are:
 
 We start with a basic model and increase the complexity.
 
-<div class="alert alert-danger">
-  <strong>WARNING!</strong> 
-  
-GWR _**does not**_ accept `NaN` and `NA` values. We either need to cull those rows or interpolate values. Since this exercise aims to demonstrate concepts and potential we interpolate. **This should not be standard practice.** 
-
-</div>
-
-```{r replace nan }
-#library(dplyr)
-#library(imputeTS)
-
-#col.sp <- as(col, "Spatial")
-#col.sp <- as_Spatial(col)
-intp_col <- col 
-intp_col$CRIME <- na_interpolation(intp_col$CRIME, na.rm = FALSE)
-intp_col$AVMEDINC <- na_interpolation(intp_col$AVMEDINC, na.rm = FALSE)
-intp_col$GV2015VAL <- na_interpolation(intp_col$GV2015VAL, na.rm = FALSE)
-#intp_col$AVBACH <- na.approx(intp_col$AVBACH, na.rm = FALSE)
-#intp_col$AVESTADist <- na.approx(intp_col$AVESTADist, na.rm = FALSE)
-#intp_col$AVAPREArea <- na.approx(intp_col$AVAPREArea, na.rm = FALSE)
+```{r }
+#- bivariate Moran's I
+x <- col$CRIME
+y <- col$GV2015VAL
+nb <- col.nb
+wt <- col.wts
+local_moran_bv(x, y, nb, wt, zero.policy = TRUE)
 ```
+
 
 
 ```{r gwr }
 #- https://crd230.github.io/gwr.html
 
-colNA <- na.omit(col)
+#colNA <- na.omit(col)
 #colNA = col[!is.na(col),]
 #colNA.nb <- poly2nb(colNA, queen = T)  
 #colNA.wts <- nb2listw(colNA.nb, style = "W", zero.policy = TRUE)
@@ -887,10 +929,11 @@ colNA <- na.omit(col)
 
 #sf_cent <- st_centroid(col['geom'])
 #xy = st_coordinates(sf_cent)
+intp_col.sp <- as(intp_col, "Spatial")
 # GWR with Gauss
-crime.bw01 <- gwr.sel(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL,# + AVESTADist, 
-                  data=intp_col, #adapt = TRUE, # data=col,
-                  coords = cbind(intp_col$X, intp_col$Y))#cbind(xy[,1], xy[,2]))#
+crime.bw01 <- gwr.sel(intp_col.sp$CRIME ~ intp_col.sp$AVMEDINC + intp_col$GV2015VAL,# + AVESTADist, 
+                  data=intp_col.sp)#, #adapt = TRUE, # data=col,
+                  #coords = cbind(intp_col.sp$X, intp_col.sp$Y))#cbind(xy[,1], xy[,2]))#
 ```
 
 ```{r gwr-bandwidth }
@@ -902,9 +945,9 @@ This is basic estimated bandwidth (`h`); the distance (in meters, because our da
 If we now `fit` with this search parameter.
 
 ```{r bw01-fit }
-gwr.fit1 <- gwr(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL,# + AVESTADist,
-                data = intp_col, 
-                coords = cbind(intp_col$X, intp_col$Y),
+gwr.fit1 <- gwr(intp_col.sp$CRIME ~ intp_col.sp$AVMEDINC + intp_col.sp$GV2015VAL,# + AVESTADist,
+                data = intp_col.sp, 
+                #coords = cbind(intp_col$X, intp_col$Y),
                 bandwidth = crime.bw01, se.fit=T, hatmatrix=T)
 ```
 
@@ -920,13 +963,14 @@ We can increase the change the weighting function to `bi-square` and `fit` anoth
 
 ```{r bi-sqaure }
 
-crime.bw02 <- gwr.sel(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL, 
-                  data=intp_col, gweight = gwr.bisquare, # data=col,
-                  coords = cbind(intp_col$X, intp_col$Y))#cbind(xy[,1], xy[,2]))#
+crime.bw02 <- gwr.sel(intp_col.sp$CRIME ~ intp_col.sp$AVMEDINC + intp_col.sp$GV2015VAL, 
+                  data=intp_col.sp, 
+                  gweight = gwr.bisquare)#, # data=col,
+                  #coords = cbind(intp_col$X, intp_col$Y))#cbind(xy[,1], xy[,2]))#
 
-gwr.fit2 <- gwr(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL,
-                data = intp_col, 
-                coords = cbind(intp_col$X, intp_col$Y),
+gwr.fit2 <- gwr(intp_col.sp$CRIME ~ intp_col.sp$AVMEDINC + intp_col.sp$GV2015VAL,
+                data = intp_col.sp, 
+                #coords = cbind(intp_col$X, intp_col$Y),
                 bandwidth = crime.bw02, gweight = gwr.bisquare,
                 se.fit=T, hatmatrix=T)
 ```
@@ -956,9 +1000,10 @@ In this case, an adaptive kernel is suitable.
 
 ```{r adapt }
 
-crime.bw03 <- gwr.sel(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL, 
-                  data=intp_col, adapt = TRUE, # data=col,
-                  coords = cbind(intp_col$X, intp_col$Y))#cbind(xy[,1], xy[,2]))#
+crime.bw03 <- gwr.sel(intp_col.sp$CRIME ~ intp_col.sp$AVMEDINC + intp_col.sp$GV2015VAL, 
+                  data=intp_col.sp, 
+                  adapt = TRUE)#, # data=col,
+                  #coords = cbind(intp_col$X, intp_col$Y))#cbind(xy[,1], xy[,2]))#
 ```
 
 ```{r bw03 }
@@ -974,9 +1019,9 @@ Unlike the previous `h` this value is NOT a distance but the proportion of all c
 
 
 ```{r fit-adapt }
-gwr.fit3 <- gwr(intp_col$CRIME ~ intp_col$AVMEDINC + intp_col$GV2015VAL,
-                data = intp_col, 
-                coords = cbind(intp_col$X, intp_col$Y),
+gwr.fit3 <- gwr(intp_col.sp$CRIME ~ intp_col.sp$AVMEDINC + intp_col.sp$GV2015VAL,
+                data = intp_col.sp, 
+                #coords = cbind(intp_col$X, intp_col$Y),
                 adapt= crime.bw03, se.fit=T, hatmatrix=T)
 ```
 
@@ -1003,14 +1048,40 @@ plot(intp_col['bwadapt'], #intp_col['bwadapt'],
 ```{r gwr-names }
 names(gwr.fit3$SDF)
 ```
-gwr.fit3$SDF$intp_col.GV2015VAL_se
 
 ```{r }
 dfree<-gwr.fit3$results$edf
 
-philly$pnhblk.t <- gwr.fit3$SDF$pnhblk/gwr.fit3$SDF$pnhblk_se
+intp_col.sp$GV2015VAL.t <- gwr.fit3$SDF$intp_col.sp.GV2015VAL/gwr.fit3$SDF$intp_col.sp.GV2015VAL_se
 
-philly$pnhblk.t.p<-2*pt(-abs(philly$pnhblk.t), dfree)
+intp_col$GV2015VAL.t.p<-2*pt(-abs(intp_col.sp$GV2015VAL.t), dfree)
+```
+
+```{r plot-p }
+#intp_col$bwadapt <- gwr.fit3$bandwidth
+
+plot(intp_col['GV2015VAL.t.p'], #intp_col['bwadapt'], 
+     main = 'p-value')#,#, border="lightgray", main=NA)
+     #col = intp_col['bwadapt'])
+```
+<div class="alert alert-warning"> <strong>TASK!</strong> </div>
+
+- **Question 16.** What do the results suggest about the spatial heterogeneity of the relationship between the 2015 property valuation (`GVAL2015`) and residential theft? (`CRIME`)?
+
+<p class="comment">
+[ Answer 14. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+</style>
+<div class="alert alert-info"> <strong>HINT: </strong> How does the `p-value` correspond with the LISA
+
+</div> 
+
+<div class="alert alert-danger">
+  <strong>STOP HERE! </strong> 
+  
+</div>
+
 
 
 `spgwr` has a suite of tests comparing OLS and GWR models under an inferential framework. The null in these tests is the OLS and thus a statistically significant test statistic indicates that the GWR provides a statistically significant improvement over an OLS in terms of its ability to match observed values. 
@@ -1037,10 +1108,7 @@ LMZ.F1GWR.test(gwr.fit3)
 ```{r lmz2 }
 LMZ.F2GWR.test(gwr.fit3)
 ```
-<div class="alert alert-danger">
-  <strong>STOP HERE! </strong> 
-  
-</div>
+
 
 ```{r lmz3 }
 LMZ.F3GWR.test(gwr.fit3)
