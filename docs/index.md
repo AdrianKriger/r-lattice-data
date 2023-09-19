@@ -22,16 +22,14 @@ The aim is to equip a user with the skills to understand and test the connection
 
 We traverse such technics as:
 
-<!--&nbsp;&nbsp;&nbsp;**1. Exploratory Data Analysis**-->  
-&nbsp;&nbsp;&nbsp;**1. Defining Neighbors and Constructing a Weight Matrix**  
-&nbsp;&nbsp;&nbsp;**2. Moran's I test for Spatial Autocorrelation**  
-&nbsp;&nbsp;&nbsp;**3. Moran's I significance test through simulation**  
-&nbsp;&nbsp;&nbsp;**4. Moran's scatter plot**   
-&nbsp;&nbsp;&nbsp;**5. Correlogram**  
-&nbsp;&nbsp;&nbsp;**6. Local Indicators of Spatial Autocorrelation (LISA)**  
-&nbsp;&nbsp;&nbsp;**7. Ordinary Least Squares (OLS) Regression**  
-&nbsp;&nbsp;&nbsp;**8. Geographically Weighted Regresssion (GWR)**  and  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. check the quality of a GWR with three 'spgwr` significance tests
+&nbsp;&nbsp;&nbsp;**1) Spatial Autocorrelation**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. Neighbors and Weight Matrices  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b. Moran’s I, along with its Monte-Carlo derivative, test for spatial autocorrelation  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c. Moran’s scatter plot and correlogram  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d. Local Indicators of Spatial Autocorrelation (LISA)  
+&nbsp;&nbsp;&nbsp;3) **Ordinary Least Squares (OLS) Regression and Geographically Weighted Regresssion (GWR)**  
+&nbsp;&nbsp;&nbsp;4) we also briefly highlight ways we can **interrogate the quality** of a GWR with;  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. 3 `spgwr` significance tests
 
 <!--<figure><center>
   <img src="{{site.baseurl | prepend: site.url}}/img/5-fold.png" style="width: 800px; height: 300px; border: 0px">
