@@ -8,7 +8,7 @@ description: "Lattice Data with R."
 # Lattice Data with R (Cape Town)
 {: .fs-9 }
 
-In this exercise, we will explore the concepts and applications of spatial autocorrelation _(Is their a relationship between attributes and their location? Do similar attributes cluster? Is their an underlying (spatial) pattern in the data?)_.
+In this exercise, we explore the concepts and applications of spatial autocorrelation _(Is their a relationship between attributes and their location? Do similar attributes cluster? Is their an underlying (spatial) pattern in the data?)_.
 
 <figure><center>
   <!--<img src="{{site.baseurl | prepend: site.url}}/img/plotly.html" style="width: 800px; height: 300px; border: 0px">-->
@@ -36,7 +36,7 @@ We traverse such technics as:
   <figcaption>Fig.2 - Inverse Distance Weighting, 2nd-order Ordinary Least Squares and Ordinary Kriging interpolation </figcaption>
 </center></figure>-->
 
-For this assignment we use a dataset that is well-suited to illustrate these concepts. A lattice dataset containing such variables such as: residential theft and burglaries (SAPS SA), median property valuation (City of Cape Town Open Data), median income and number Bachelor degrees (STATSSA), among other variables, of suburbs within the City of Cape Town; South Africa. The dataset is discussed in the [latticeData.ipynb](https://github.com/AdrianKriger/r-lattice-data/blob/main/latticeSpatial.ipynb).
+For this assignment we use a dataset that is well-suited to illustrate these concepts. A lattice dataset containing such variables such as: residential theft and burglaries (SAPS SA), median property valuation (City of Cape Town Open Data), median income and number Bachelor degrees (STATSSA), among other variables, of suburbs within the City of Cape Town; South Africa. The dataset is discussed in [latticeData.ipynb](https://github.com/AdrianKriger/r-lattice-data/blob/main/latticeSpatial.ipynb).
 
 <!--The [meuse](https://search.r-project.org/CRAN/refmans/sp/html/meuse.html) dataset which comes with the `gstat` package. 
 **meuse**: gives locations (on a regular grid) and topsoil heavy metal concentrations, along with a number of soil and landscape variables at the observation locations, collected in a flood plain of the river Meuse, near the village of Stein (NL). Heavy metal concentrations are from composite samples of an area of approximately 15 m x 15 m.-->
