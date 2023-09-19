@@ -27,7 +27,7 @@ We traverse such technics as:
 &nbsp;&nbsp;&nbsp;**7. Local Indicators of Spatial Autocorrelation (LISA)**  
 &nbsp;&nbsp;&nbsp;**8. Ordinary Least Squares (OLS) Regression**  
 &nbsp;&nbsp;&nbsp;**9. Geographically Weighted Regresssion (GWR)**  and 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**a. check the quality of a GWR with three 'spgwr` significance tests**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. check the quality of a GWR with three 'spgwr` significance tests
 
 <!--<figure><center>
   <img src="{{site.baseurl | prepend: site.url}}/img/5-fold.png" style="width: 800px; height: 300px; border: 0px">
