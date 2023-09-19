@@ -35,7 +35,7 @@ We traverse such technics as:
   <img src="{{site.baseurl | prepend: site.url}}/img/5-fold.png" style="width: 800px; height: 300px; border: 0px">
   <figcaption>Fig.2 - Inverse Distance Weighting, 2nd-order Ordinary Least Squares and Ordinary Kriging interpolation </figcaption>
 </center></figure>-->
-_____
+
 For this assignment we use a dataset that is well-suited to illustrate these concepts. A lattice dataset containing such variables such as: residential theft and burglaries (SAPS SA), median property valuation (City of Cape Town Open Data), median income and number Bachelor degrees (STATSSA), among other variables, of suburbs within the City of Cape Town; South Africa. The dataset is discussed in the [latticeData.ipynb](https://github.com/AdrianKriger/r-lattice-data/blob/main/latticeSpatial.ipynb).
 
 <!--The [meuse](https://search.r-project.org/CRAN/refmans/sp/html/meuse.html) dataset which comes with the `gstat` package. 
