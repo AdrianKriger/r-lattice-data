@@ -2,37 +2,39 @@
 layout: default
 title: Home
 nav_order: 1
-description: "Spatial Statistics with R."
+description: "Lattice Data with R."
 ---
 
-# (Geo)spatial Statistics with R (Meuse)
+# Lattice Data with R (Cape Town)
 {: .fs-9 }
 
-In this exercise, we will explore the concepts and applications of Deterministic and Stochastic Interpolation Methods. 
+In this exercise, we will explore the concepts and applications of spatial autocorrelation and higher order regression. 
 
 <figure><center>
   <img src="{{site.baseurl | prepend: site.url}}/img/preds.png" style="width: 800px; height: 300px; border: 0px">
-  <figcaption>Fig.1 - Inverse Distance Weighting, 2nd-order Ordinary Least Squares and Ordinary Kriging interpolation </figcaption>
+  <figcaption>Fig.1 - Residential crime (theft and burglary) per suburb (Cape Town, South Africa) </figcaption>
 </center></figure> 
 
 <!-- <iframe src="{{site.baseurl | prepend: site.url}}/img/plotly.html" style="width: 800px; height: 300px; border: 0px"></iframe> -->
 We traverse such technics as:
 
-&nbsp;&nbsp;&nbsp;**1) Deterministic methods**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. Thiessen polygons  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b. Linear Regression  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c. Inverse Distance Weighting  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d. Ordinary Least Squares  
-&nbsp;&nbsp;&nbsp;**2) Stochastic methods**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. Variograms and Kriging  
-&nbsp;&nbsp;&nbsp;**3)** we also briefly highlight ways we can **interrogate the quality** of an interpolation with;  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. _N_-fold cross validation; and  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b. Residual Mean Squared Error (rmse).
+&nbsp;&nbsp;&nbsp;**1. Exploratory Data Analysis**  
+&nbsp;&nbsp;&nbsp;**2. Defining Neighbors and Constructing a Weight Matrix**  
+&nbsp;&nbsp;&nbsp;**3. Moran's I test for Spatial Autocorrelation**  
+&nbsp;&nbsp;&nbsp;**4. Moran's I significance test through simulation**  
+&nbsp;&nbsp;&nbsp;**5. Moran's scatter plot**   
+&nbsp;&nbsp;&nbsp;**6. Correlogram**  
+&nbsp;&nbsp;&nbsp;**7. Local Indicators of Spatial Autocorrelation (LISA)**  
+&nbsp;&nbsp;&nbsp;**8. Ordinary Least Squares (OLS) Regression**  
+&nbsp;&nbsp;&nbsp;**9. Geographically Weighted Regresssion (GWR)**  and 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**a. check the quality of a GWR with three 'spgwr` significance tests**  
 
 <!--<figure><center>
   <img src="{{site.baseurl | prepend: site.url}}/img/5-fold.png" style="width: 800px; height: 300px; border: 0px">
   <figcaption>Fig.2 - Inverse Distance Weighting, 2nd-order Ordinary Least Squares and Ordinary Kriging interpolation </figcaption>
 </center></figure>-->
 _____
-For this assignment we use a dataset that is well-suited to illustrate these concepts. The [meuse](https://search.r-project.org/CRAN/refmans/sp/html/meuse.html) dataset which comes with the `gstat` package. 
-**meuse**: gives locations (on a regular grid) and topsoil heavy metal concentrations, along with a number of soil and landscape variables at the observation locations, collected in a flood plain of the river Meuse, near the village of Stein (NL). Heavy metal concentrations are from composite samples of an area of approximately 15 m x 15 m.
+For this assignment we use a dataset that is well-suited to illustrate these concepts. A lattice dataset containing such variables such as: residential theft and burgalaries (SAPS SA), median property valuation (City of Cape Town Open Data), median income and number Bachelor degrees (STATSSA), among other variables, of suburbs within the City of Cape Town; South Africa.
+
+<!--The [meuse](https://search.r-project.org/CRAN/refmans/sp/html/meuse.html) dataset which comes with the `gstat` package. 
+**meuse**: gives locations (on a regular grid) and topsoil heavy metal concentrations, along with a number of soil and landscape variables at the observation locations, collected in a flood plain of the river Meuse, near the village of Stein (NL). Heavy metal concentrations are from composite samples of an area of approximately 15 m x 15 m.-->
