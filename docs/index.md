@@ -27,8 +27,8 @@ We traverse such technics as:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b. Moran’s I, along with its Monte-Carlo derivative, test for spatial autocorrelation  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c. Moran’s scatter plot and correlogram  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d. Local Indicators of Spatial Autocorrelation (LISA)  
-&nbsp;&nbsp;&nbsp;3) **Ordinary Least Squares (OLS) Regression and Geographically Weighted Regresssion (GWR)**  
-&nbsp;&nbsp;&nbsp;4) we also briefly highlight ways we can **interrogate the quality** of a GWR with;  
+&nbsp;&nbsp;&nbsp;**3) Ordinary Least Squares (OLS) Regression and Geographically Weighted Regresssion (GWR)**  
+&nbsp;&nbsp;&nbsp;**4)** we also briefly highlight ways we can **interrogate the quality** of a GWR with;  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. three `spgwr` significance tests
 
 <!--<figure><center>
