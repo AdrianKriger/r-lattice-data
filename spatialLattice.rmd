@@ -201,11 +201,13 @@ str(coct)
 ##-- click in this cell and type your answer here. your answer must be between the ``` backticks ```
 
 
+
 ```
 - **Question 3b.** Use the `summary()` function to print the summary statistics?
 
 ```{r answer3b}
 ##-- click in this cell and type your answer here. your answer must be between the ``` backticks ```
+
 
 
 ```
@@ -920,14 +922,6 @@ plot(intp_coct['GV2015VAL.t.p'], #intp_col['bwadapt'],
 <p class="comment">
 [ Answer 16. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
 </p>
-
-
-<div class="alert alert-danger">
-  <strong>STOP HERE! </strong> 
-  
-</div>
-
-
 
 `spgwr` has a suite of tests comparing OLS and GWR models under an inferential framework. The null in these tests is the OLS and thus a statistically significant test statistic indicates that the GWR provides a _**statistically significant improvement**_ over an OLS in terms of its ability to match observed values. 
 
