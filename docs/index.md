@@ -11,7 +11,8 @@ description: "Lattice Data with R."
 In this exercise, we will explore the concepts and applications of spatial autocorrelation and higher order regression. 
 
 <figure><center>
-  <img src="{{site.baseurl | prepend: site.url}}/img/plotly.html" style="width: 800px; height: 300px; border: 0px">
+  <!--<img src="{{site.baseurl | prepend: site.url}}/img/plotly.html" style="width: 800px; height: 300px; border: 0px">-->
+  <iframe src="{{site.baseurl | prepend: site.url}}/img/plotly.html" style="width: 800px; height: 400px; border: 0px"></iframe>
   <figcaption>Fig.1 - Residential crime (theft and burglary) per suburb (Cape Town, South Africa) </figcaption>
 </center></figure> 
 
