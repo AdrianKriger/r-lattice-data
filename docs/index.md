@@ -8,7 +8,7 @@ description: "Lattice Data with R."
 # Lattice Data with R (Cape Town)
 {: .fs-9 }
 
-In this exercise, we will explore the concepts and applications of spatial autocorrelation _(Is their a relationship between attributes and their location? Do similar attributes cluster? Is their an underlying (spatial) pattern in the data?)_ and higher order regression. 
+In this exercise, we will explore the concepts and applications of spatial autocorrelation _(Is their a relationship between attributes and their location? Do similar attributes cluster? Is their an underlying (spatial) pattern in the data?)_ and extend Ordinary Least Squares regression with location; namely Geographically Weighted Regression.
 
 <figure><center>
   <!--<img src="{{site.baseurl | prepend: site.url}}/img/plotly.html" style="width: 800px; height: 300px; border: 0px">-->
