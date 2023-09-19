@@ -8,7 +8,7 @@ description: "Lattice Data with R."
 # Lattice Data with R (Cape Town)
 {: .fs-9 }
 
-In this exercise, we will explore the concepts and applications of spatial autocorrelation _(Is their a relationship between attributes and their location? Do similar attributes cluster? Is their an underlying (spatial) pattern in the data?)_ and extend Ordinary Least Squares regression with location; namely Geographically Weighted Regression.
+In this exercise, we will explore the concepts and applications of spatial autocorrelation _(Is their a relationship between attributes and their location? Do similar attributes cluster? Is their an underlying (spatial) pattern in the data?)_.
 
 <figure><center>
   <!--<img src="{{site.baseurl | prepend: site.url}}/img/plotly.html" style="width: 800px; height: 300px; border: 0px">-->
@@ -17,17 +17,20 @@ In this exercise, we will explore the concepts and applications of spatial autoc
 </center></figure> 
 
 <!-- <iframe src="{{site.baseurl | prepend: site.url}}/img/plotly.html" style="width: 800px; height: 300px; border: 0px"></iframe> -->
+
+The aim is to equip a user with the skills to understand and test the connections and relationship between lattice data with such methods as Global and Local Morans as-well-as extending ordinary least squares regression to accommodate location; namely geographically weighted regression. 
+
 We traverse such technics as:
 
-&nbsp;&nbsp;&nbsp;**1. Exploratory Data Analysis**  
-&nbsp;&nbsp;&nbsp;**2. Defining Neighbors and Constructing a Weight Matrix**  
-&nbsp;&nbsp;&nbsp;**3. Moran's I test for Spatial Autocorrelation**  
-&nbsp;&nbsp;&nbsp;**4. Moran's I significance test through simulation**  
-&nbsp;&nbsp;&nbsp;**5. Moran's scatter plot**   
-&nbsp;&nbsp;&nbsp;**6. Correlogram**  
-&nbsp;&nbsp;&nbsp;**7. Local Indicators of Spatial Autocorrelation (LISA)**  
-&nbsp;&nbsp;&nbsp;**8. Ordinary Least Squares (OLS) Regression**  
-&nbsp;&nbsp;&nbsp;**9. Geographically Weighted Regresssion (GWR)**  and  
+<!--&nbsp;&nbsp;&nbsp;**1. Exploratory Data Analysis**-->  
+&nbsp;&nbsp;&nbsp;**1. Defining Neighbors and Constructing a Weight Matrix**  
+&nbsp;&nbsp;&nbsp;**2. Moran's I test for Spatial Autocorrelation**  
+&nbsp;&nbsp;&nbsp;**3. Moran's I significance test through simulation**  
+&nbsp;&nbsp;&nbsp;**4. Moran's scatter plot**   
+&nbsp;&nbsp;&nbsp;**5. Correlogram**  
+&nbsp;&nbsp;&nbsp;**6. Local Indicators of Spatial Autocorrelation (LISA)**  
+&nbsp;&nbsp;&nbsp;**7. Ordinary Least Squares (OLS) Regression**  
+&nbsp;&nbsp;&nbsp;**8. Geographically Weighted Regresssion (GWR)**  and  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. check the quality of a GWR with three 'spgwr` significance tests
 
 <!--<figure><center>
