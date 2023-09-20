@@ -209,7 +209,6 @@ str(coct)
 ##-- click in this cell and type your answer here. your answer must be between the ``` backticks ```
 
 
-
 ```
 - **Question 3c.** What is the `mean`, `maximum` and `minimum` variable for each data set?
 
@@ -517,13 +516,13 @@ MC
 ```
 <div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
 
-- **Question 9.** Does the `Monte-Carlo` simulation agree with the traditional `Moran's I`.
+- **Question 9.** Does the `Monte-Carlo` simulation agree with the traditional `Moran's I`?
 
 <p class="comment">
 [ Answer 9. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
 </p>
 
-**We can `plot` the distribution of the `MC` methods Moran I values we expect had crime been randomly distributed across the suburbs** 
+**We can `plot` the distribution of the `moran.mc()` methods Moran I values we expect had crime been randomly distributed across the suburbs** 
 
 ```{r plot-mc }
 #- print
@@ -533,7 +532,7 @@ plot(MC)
 
 <div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
 
-- **Question 10.** NOTICE: The `0.8` observed statistic falls all the _way_ to the right. What does this mean? 
+- **Question 10.** NOTICE: The observed `statistic = 0.8`  falls all the _way_ to the right. What does this mean? 
 
 </style>
 <div class="alert alert-info"> <strong>HINT!</strong> What do the positive and negative Moran statistic indicate?
@@ -593,7 +592,7 @@ ____
 
 Like Global Moran’s I, the **Local Moran’s I statistic** can be used to _quantify spatial patterns occurring across a given area_. However, instead of producing one value that encompasses the entire study area, the **Local Moran’s I method produces a statistic for each polygon in the study area**.
 
-The advantage of this localized method is that it shows exactly which polygons are similar or different to the objects in their neighborhood. In other words, it identifies **where spatial autocorrelation occurs as well as the level of significance* that is experienced.
+The advantage of this localized method is that it shows exactly which polygons are similar or different to the objects in their neighborhood. In other words, it identifies **_where spatial autocorrelation occurs as well as the level of significance_** that is experienced.
 
 ```{r local-moran }
 #- local Moran's I
@@ -602,7 +601,7 @@ coct_locm <- localmoran(coct$CRIME, coct.wts, zero.policy = TRUE,
 summary(coct_locm)
 ```
 
-We get a number of useful statistics from the local model:
+We get a number of useful statistics from the `localmoran()` model:
 
 > Ii    : local moran statistic  
 > E.Ii  : expectation of local moran statistic  
@@ -651,7 +650,7 @@ legend("bottomleft", legend =c("insignificant", "low-low",
 title(main="LISA clusters. City of Cape Town Crime (2015)")
 ```
 </style>
-<div class="alert alert-info"> <strong>HINT: </strong> What do the `low-low', low-high`, `high-low`, etc. mean?
+<div class="alert alert-info"> <strong>HINT: </strong> What do the `low-low`, `low-high`, `high-low`, etc. mean?
 
 </div>  
 
@@ -687,6 +686,36 @@ Normally we take a dependent variable (crime) and try and explain the variation 
 
 Lets execute a basic OLS regression for crime (`CRIME`) per suburb on the following independent variables: Property Valuation (`GVAL2015`) and Income (`AVMEDINC`).
 
+<div class="alert alert-warning"> <strong>TASK!</strong> </div>
+
+- **Question 14.** Execute the following two `code chunks / blocks` and discuss the `summary()`. What conclusion can you draw from the `R-squared`, `Coefficients` and `p- value`s? Additionally comment on the _`sign`_ of the independent variables.
+
+<div class="alert alert-block alert-success"> **REMEMBER WHAT WE ARE LOOKING FOR:**
+
+A regression model gives us an idea of how different factors are associated with the target variable (`CRIME`) in the suburbs of Cape Town, South Africa and their interaction.
+
+<br>
+
+**a. Significance.**  
+
+|||
+|-|:---|
+|**`Null Hypothesis`**|The independent variable has NO significant influence / relationship to `CRIME` |
+|**`Alt Hypothesis`**|The independent variable HAS significant influence / relationship to `CRIME` |
+
+Smaller `p-values < 0` generally  indicate significance while `p-values > 0` typically indicate no significance.
+
+<br>
+
+**b. Coefficient Estimates.**
+The `Estimate` indicates how the rate of change, for one unit of the predictor variable (`AVMEDINC`, `GV2015VAL`), are associated with the independent variable (`CRIME`)
+
+<br>
+
+**c. Model _fit._**
+These are the `R-squared` values that allow us to understand the _**precision**_ of the model. Higher values are preferred. 
+</div>
+
 ```{r ols-r }
 # OLS Regression to predict CRIME using AVEMEDINC and GV2015VAL as independent variables
 
@@ -696,9 +725,12 @@ reg1 <- lm(coct$CRIME ~ coct$AVMEDINC + coct$GV2015VAL, na.action=na.exclude)
 ```{r ols-summary }
 summary(reg1)
 ```
-<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+ 
 
-- **Question 14.** What conclusion can you draw from the `Multiple R-`, `Adjusted R-squared` and `p-` values? Additionally comment on the _`sign`_ of the independent variables. 
+</style>
+<div class="alert alert-info"> <strong>EXTRA! </strong> Your discussion should include why the `R-squared` is imprecise. How would the precision of the model become better? _(look at the summary. Its right there)_
+
+</div>  
 
 <p class="comment">
 [ Answer 14. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
