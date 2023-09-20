@@ -2,9 +2,9 @@
 ##-- arkriger: October 2023
 title: "Exploring Lattice Data with `R`"
 output:
+  html_notebook: default
   html_document:
     df_print: paged
-  html_notebook: default
 ---
 <style> 
 p.comment {
@@ -177,7 +177,7 @@ slotNames(coct)
 
 ```{r names }
 #- names of the columns in the dataset 
-names(col)
+names(coct)
 ```
 
 Notice the spatial aspect of the data; `geom` which represent the areas (each suburb) under study.
@@ -198,9 +198,9 @@ str(coct)
 - **Question 3a.** Create a subset data from `coct` (select relevant variables and generate summary statistics etc.). Select the numerical variables in columns `4, 9, 12-to-14, 17, 18 and 20` and store the subset data into `coct_sub` variable. 
 
 ```{r answer3}
-##-- click in this cell and type your answer here. your answer must be between the ``` backticks ```
+##-- click in this cell and type your answer here. your answer must be between the ``` back ticks ```
 
-
+coct_sub <- coct[,c(4, 9, 12:13, 17:18, 20)]
 
 ```
 - **Question 3b.** Use the `summary()` function to print the summary statistics?
@@ -208,6 +208,7 @@ str(coct)
 ```{r answer3b}
 ##-- click in this cell and type your answer here. your answer must be between the ``` backticks ```
 
+summary(coct_sub)
 
 ```
 - **Question 3c.** What is the `mean`, `maximum` and `minimum` variable for each data set?
@@ -692,7 +693,7 @@ Lets execute a basic OLS regression for crime (`CRIME`) per suburb on the follow
 
 <div class="alert alert-block alert-success"> **REMEMBER WHAT WE ARE LOOKING FOR:**
 
-A regression model gives us an idea of how different factors are associated with the target variable (`CRIME`) in the suburbs of Cape Town, South Africa and their interaction.
+A regression model gives us an idea of how different factors are associated with the target variable (`CRIME`) and their interaction.
 
 <br>
 
@@ -703,7 +704,7 @@ A regression model gives us an idea of how different factors are associated with
 |**`Null Hypothesis`**|The independent variable has NO significant influence / relationship to `CRIME` |
 |**`Alt Hypothesis`**|The independent variable HAS significant influence / relationship to `CRIME` |
 
-Smaller `p-values < 0` generally  indicate significance while `p-values > 0` typically indicate no significance.
+Smaller `p-value`s close-to 0 generally  indicate significance while 0 < `p-value`s > 0 typically indicate no significance.
 
 <br>
 
@@ -737,25 +738,66 @@ summary(reg1)
 </p>
 
 
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 15.** `Run` the following `code chunk / block` which executes a `moran.test()` on the **_residuals_** of the OLS regression. Is there autocorrelation in the residuals? Substantiate your answer.
+
 ```{r ols-morans-residuals }
 #- Moran's I on the residuals 
 moran.test(residuals(reg1), coct.wts, alternative="two.sided", 
            zero.policy = TRUE,  na.action = na.exclude)
 ```
 
-<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
-
-- **Question 15.** Is there autocorrelation in the residuals? Substantiate your answer.
-
 <p class="comment">
 [ Answer 15. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
 </p>
 
+**Importantly we want to understand the residuals``
+
+<div class="alert alert-warning"> <strong>TASK / QUESTION!</strong> </div>
+
+- **Question 16.** Execute the following three `code chunks / blocks` which summaries the OLS residuals and generates a number of `plot()`s.
+
+**a.**
+```{r ols-residuals-summary }
+#- ols residuals summary
+summary(reg1$residuals)
+```
+**b.**
+
+```{r  ols-stand-residuals }
+#- ols standard residuals
+s.resids <- rstudent(reg1)
+plot(s.resids, type='h')
+abline(h=c(-2, 2), col='lightskyblue')
+```
+
 **If we plot the standardized residuals plotted against the fitted values, we can see that as there is no clear pattern in the cloud.**
 
+**c.**
 ```{r ols-regression-plot }
 plot(reg1, which=3)
 ```
+**d.**
+```{r qqplot-ols-residuals}
+library(car)
+qqPlot(reg1)
+```
+
+</style>
+<div class="alert alert-info"> <strong>HINT! </strong> Your answer should discuss outliers and the distribution
+
+</div>
+
+<p class="comment">
+[ Answer 16. click in this cell and type your answer here. your answer must be between the outer [  
+a. The summary of the residuals:  
+b. The standard residuals:  
+c. The standardized residuals vs the fitted values:  
+d. the `qqPlot`:  
+] brackets ]
+</p>
+
 **Similar to the LISA cluster; the `OLS residuals` better describe whether a spatial pattern exists or not** 
 
 ```{r }
@@ -780,6 +822,16 @@ legend("bottomright",cex=0.7,fill=attr(cols,"palette"),bty="n",
 <p class="comment">
 [ Answer 14. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
 </p>
+
+<div class="alert alert-block alert-success"> **Before we continue lets understand the purpose of regression analysis:** _we want to predict_ </div>
+
+
+<div class="alert alert-danger">
+
+  <strong>WARNING!</strong> STOP HERE 
+
+  </div>
+
 
 #### - Missing Values
 
@@ -983,7 +1035,7 @@ anova(gwr.fit3)
 </p>
 
 
-<div class="alert alert-block alert-success"> **Now that we're done we can create a loverly interactive plot </div>
+<div class="alert alert-block alert-success"> **Now that we're done we can create a loverly interactive plot** </div>
 
 ```{r plotly-libraries }
 library(plotly)
