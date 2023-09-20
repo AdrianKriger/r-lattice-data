@@ -826,11 +826,41 @@ legend("bottomright",cex=0.7,fill=attr(cols,"palette"),bty="n",
 <div class="alert alert-block alert-success"> **Before we continue lets understand the purpose of regression analysis:** _we want to predict_ </div>
 
 
-<div class="alert alert-danger">
+**Lets create a synthetic data set that represents an increase in $5\%$ household income (`AVMEDINC`) and an increase of $11\%$ in the value of properties (`GV2015VA`) then predict how `CRIME` will change.**
 
-  <strong>WARNING!</strong> STOP HERE 
+```{r }
+test <- coct[,c(9, 18)]
+test$AVMEDINC <- test$AVMEDINC * (100 + 5)/100
+test$GV2015VAL <- na.approx(test$GV2015VAL,  rule = 2)
+test$GV2015VAL <- test$GV2015VAL * (100 + 11)/100
+test <- coct[,c(9, 18)]
 
-  </div>
+# # create some test data 
+# test = data.frame(
+#   PctRural = c(10, 70, 50, 70, 10),
+#   PctBach  = c(5, 5, 10, 10, 25),
+#   PctEld   = c(2, 5, 5, 12, 15),
+#   PctFB    = c(1, 1, 1, 5, 5),
+#   PctPov   = c(20, 10, 8, 25, 25),  
+#   PctBlack = c(5, 75, 20, 30, 75))
+
+# predict using the model
+predCrime = round(predict(reg1, newdata = test), 3)
+
+test <- test %>% st_drop_geometry()
+test$CRIME <- coct$CRIME
+
+# display
+data.frame(test, Predicted.Crime = predCrime)
+```
+
+<div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
+
+- **Question 14.** Discuss the the result. Your answer should refer to the `Coefficients` and `p-values` of the OLS regression mode. Also discuss the empty rows.
+
+<p class="comment">
+[ Answer 14. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
 
 
 #### - Missing Values
