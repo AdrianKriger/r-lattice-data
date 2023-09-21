@@ -6,6 +6,7 @@ output:
   html_document:
     df_print: paged
 ---
+
 <style> 
 p.comment {
 background-color: #DBDBDB;
@@ -69,21 +70,22 @@ rm(list=ls())
 # Install necessary packages: You only need to run this part once
 ##- install.packages(c("RColorBrewer", "classInt", "sp", sf", "ggplot2", "extrafont", "cowplot", spdep", "spgwr", "PerformanceAnalytics", "corrplot"))))
 
-library(knitr)
+#library(knitr)
 library(RColorBrewer)  #color palettes
 library(classInt) 
 library(sp)
 library(sf)  #simple features for spatial data
-library(corrplot)
+#library(corrplot)
 library(ggplot2)
 library(extrafont)
 library(cowplot)
-library(corrplot)
-library(Hmisc)
+#library(corrplot)
+library(car)
+#library(Hmisc)
 library(maptools)
 library(VIM)
 library(spdep)  #spatial regression
-library(sfdep)  #spatial regression
+#library(sfdep)  #spatial regression
 library(spgwr)  #geographically weighted regression
 library(PerformanceAnalytics)
 #library(zoo)
@@ -659,7 +661,7 @@ title(main="LISA clusters. City of Cape Town Crime (2015)")
 [ Answer 13. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
 </p>
 
-### -  `Local Moran` Plot
+### -  Local Moran `plot()`
 
 Similarly we can plot the Local Moran statistic (`Ii`) which indicates that the suburb is surrounded by units with similar values.
 
@@ -693,7 +695,7 @@ Lets execute a basic OLS regression for crime (`CRIME`) per suburb on the follow
 
 <div class="alert alert-block alert-success"> **REMEMBER WHAT WE ARE LOOKING FOR:**
 
-A regression model gives us an idea of how different factors are associated with the target variable (`CRIME`) and their interaction.
+A regression model gives us an idea of how _different factors are associated with_ the target variable (`CRIME`) and their interaction.
 
 <br>
 
@@ -704,7 +706,7 @@ A regression model gives us an idea of how different factors are associated with
 |**`Null Hypothesis`**|The independent variable has NO significant influence / relationship to `CRIME` |
 |**`Alt Hypothesis`**|The independent variable HAS significant influence / relationship to `CRIME` |
 
-Smaller `p-value`s close-to 0 generally  indicate significance while 0 < `p-value`s > 0 typically indicate no significance.
+A `p-value` close-to 0 generally indicates significance while a 0 < `p-value` > 0 typically indicates no significance.
 
 <br>
 
@@ -752,11 +754,11 @@ moran.test(residuals(reg1), coct.wts, alternative="two.sided",
 [ Answer 15. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
 </p>
 
-**Importantly we want to understand the residuals``
+**Importantly we want to understand the residuals**
 
 <div class="alert alert-warning"> <strong>TASK / QUESTION!</strong> </div>
 
-- **Question 16.** Execute the following three `code chunks / blocks` which summaries the OLS residuals and generates a number of `plot()`s.
+- **Question 16.** Execute the following three a. b and c `code chunks / blocks` which summaries the OLS residuals and generates a number of `plot()`s.
 
 **a.**
 ```{r ols-residuals-summary }
@@ -772,15 +774,15 @@ plot(s.resids, type='h')
 abline(h=c(-2, 2), col='lightskyblue')
 ```
 
-**If we plot the standardized residuals plotted against the fitted values, we can see that as there is no clear pattern in the cloud.**
+**Finally we can compare the standardized residuals with the `t-distribution` _(the fitted values)_**
 
+<!-- **c.** -->
+<!-- ```{r ols-regression-plot } -->
+<!-- plot(reg1, which=2) -->
+<!-- ``` -->
 **c.**
-```{r ols-regression-plot }
-plot(reg1, which=3)
-```
-**d.**
+
 ```{r qqplot-ols-residuals}
-library(car)
 qqPlot(reg1)
 ```
 
@@ -793,8 +795,7 @@ qqPlot(reg1)
 [ Answer 16. click in this cell and type your answer here. your answer must be between the outer [  
 a. The summary of the residuals:  
 b. The standard residuals:  
-c. The standardized residuals vs the fitted values:  
-d. the `qqPlot`:  
+c. The standardized residuals vs `t-values` (the fitted values):  
 ] brackets ]
 </p>
 
@@ -825,7 +826,7 @@ legend("bottomright",cex=0.7,fill=attr(cols,"palette"),bty="n",
 
 <div class="alert alert-block alert-success"> **What is the purpose of regression analysis:** _we want to predict_ 
 
-Lets create a synthetic data set that represents an increase in $5\%$ household income (`AVMEDINC`) and an increase of $11\%$ in the value of properties (`GV2015VA`) then predict how `CRIME` will change.
+Lets create a synthetic dataset that represents an increase in $5\%$ household income (`AVMEDINC`) and an increase of $11\%$ in the value of properties (`GV2015VA`) then predict how `CRIME` will change.
 
 </div>
 
@@ -855,12 +856,18 @@ data.frame(test, Predicted.Crime = predCrime)
 </p>
 
 
+<div class="alert alert-block alert-success"> **CONCEPT CHECK:** 
+
+We have **_infered_** and **_predicted_**. We have established a connection and relationship (between dependent variables: `AVMEDINC` and `GV2015VAL` and an independent variable: `CRIME`) and used the knowledge to imagine a future instance. We have not determined **_causality_**. We do not know what is _causing_ the variations in `CRIME`
+</div>
+
+
 #### - Missing Values
 
 <div class="alert alert-danger">
   <strong>WARNING!</strong> 
   
-All the previous function accepted a `zero.policy = TRUE/FALSE` and  `na.action = na.exclude/pass` which allowed us to work around not having a complete data set (`NaN` and `NA` values). 
+All the previous functions accepted a `zero.policy = TRUE/FALSE` and  `na.action = na.exclude/pass` which allowed us to work around not having a complete data set (`NaN` and `NA` values). 
 
 Geographically Weighted Regression (GWR) _**does not**_ accept `NaN` and `NA` values. 
 
@@ -872,7 +879,6 @@ In order to proceed onto GWR we either need to cull no-data rows or interpolate 
 
 ```{r mice }
 #library(mice)
-
 
 coct_sub <- coct[,c(4, 9:14, 17:18, 20, 26)]
 
@@ -912,7 +918,7 @@ We start with a basic model and increase the complexity.
 intp_coct.sp <- as(intp_coct, "Spatial")
 
 # GWR with Gauss
-crime.bw01 <- gwr.sel(intp_coct$CRIME ~ intp_coct$AVMEDINC + intp_coct$GV2015VAL, 
+crime.bw01 <- gwr.sel(CRIME ~ AVMEDINC + GV2015VAL, 
                   data=intp_coct.sp)# 
 ```
 
@@ -925,7 +931,7 @@ This is basic estimated bandwidth (`h`); the distance (in meters, because our da
 If we now `fit` with this search parameter.
 
 ```{r bw01-fit }
-gwr.fit1 <- gwr(intp_coct$CRIME ~ intp_coct$AVMEDINC + intp_coct$GV2015VAL,
+gwr.fit1 <- gwr(CRIME ~ AVMEDINC + GV2015VAL,
                 data = intp_coct.sp, 
                 bandwidth = crime.bw01, se.fit=T, hatmatrix=T)
 ```
@@ -943,13 +949,13 @@ In this case, an adaptive kernel is suitable.
 
 ```{r adapt }
 
-crime.bw03 <- gwr.sel(intp_coct$CRIME ~ intp_coct$AVMEDINC + intp_coct$GV2015VAL, 
+crime.bw03 <- gwr.sel(CRIME ~ AVMEDINC + GV2015VAL, 
                   data=intp_coct.sp, 
-                  adapt = TRUE)#, # 
+                  adapt = TRUE)
 ```
 
 ```{r bw03 }
-
+#- adapt bandwidth
 crime.bw03
 ```
 
@@ -957,11 +963,11 @@ Unlike the previous `h` this value is NOT a distance but the proportion of all c
 
 <div class="alert alert-warning"> <strong>TASK!</strong> </div>
 
-- **Question 15.** Execute the following two `code chunks / blocks` and discuss the result.
+- **Question 15.** Execute the following three `code chunks / blocks` and discuss the result.
 
 
 ```{r fit-adapt }
-gwr.fit3 <- gwr(intp_coct$CRIME ~ intp_coct$AVMEDINC + intp_coct$GV2015VAL,
+gwr.fit3 <- gwr(CRIME ~ AVMEDINC + GV2015VAL,
                 data = intp_coct.sp, 
                 adapt= crime.bw03, se.fit=T, hatmatrix=T)
 ```
@@ -970,8 +976,27 @@ gwr.fit3 <- gwr(intp_coct$CRIME ~ intp_coct$AVMEDINC + intp_coct$GV2015VAL,
 ```{r print-fit03 }
 gwr.fit3
 ```
+**While GWR does provide a comparison with a global OLS coefficients; lets increase the precision and look at the numbers more closely.**
 
-**We can see how `adapt` harvested different search distances across our study area** 
+```{r }
+# table of GWR coefficients
+t1 = apply(gwr.fit3$SDF@data[, 2:4], 2, summary)
+# OLS coefficients
+t2 = coef(reg1)
+# joint together with a row bind
+tab <- rbind(t1, t2)
+# add name to last row of tab
+rownames(tab)[7] <- "Global"
+# transpose tab
+tab <- t(round(tab, 3))
+tab
+```
+
+<p class="comment">
+[ Answer 15. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+**We can also see how `adapt` harvested different search distances across our study area** 
 
 ```{r print fit03.bw }
 gwr.fit3$bandwidth
@@ -987,17 +1012,17 @@ plot(intp_coct['bwadapt'], #intp_col['bwadapt'],
 
 <div class="alert alert-warning"> <strong>QUESTION!</strong> </div>
 
-- **Question 15.** Discuss the result of `gwr.fit3$bandwidth` and the `plot()` above. Is the adaptive bandwidth more representative than a fixed distance for the entire study area?
+- **Question 16.** Discuss the result of `gwr.fit3$bandwidth` and the `plot()` above. Is the adaptive bandwidth more representative than a fixed distance for the entire study area?
 
 <p class="comment">
-[ Answer 15. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+[ Answer 16. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
 </p>
 
 The product of `gwr()` contains many wonderful parameters. The previous `code chunk / block` highlighted how the `adapt` option changed the bandwidth based on the size of the search area (suburb). **But what we really want to known is whether the coefficients are statistically significant _(is there a relationship between the variables? Is residential crime connected to property valuation and household income)_.** While these parameters are not readily available we can calculate them.
 
 <div class="alert alert-warning"> <strong>TASK!</strong> </div>
 
-- **Question 16.** Execute the following three `code chunks / blocks` and discuss the results.
+- **Question 17.** Execute the following three `code chunks / blocks` and discuss the results.
 
 
 ```{r gwr-names }
@@ -1026,14 +1051,14 @@ plot(intp_coct['GV2015VAL.t.p'], #intp_col['bwadapt'],
 
 
 <p class="comment">
-[ Answer 16. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+[ Answer 17. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
 </p>
 
 `spgwr` has a suite of tests comparing OLS and GWR models under an inferential framework. The null in these tests is the OLS and thus a statistically significant test statistic indicates that the GWR provides a _**statistically significant improvement**_ over an OLS in terms of its ability to match observed values. 
 
 <div class="alert alert-warning"> <strong>TASK!</strong> </div>
 
-- **Question 15.** Execute the following three `code chunks / blocks` that tests GWR and discuss the result.
+- **Question 18.** Execute the following three `code chunks / blocks` that tests GWR and discuss the result.
 
 
 ```{r bfc }
@@ -1044,16 +1069,21 @@ BFC02.gwr.test(gwr.fit3)
 ```{r lmz-test }
 LMZ.F1GWR.test(gwr.fit3)
 ```
+
 Finally we can execute an Analysis of Variance (ANOVA) which will test the difference between the means of the OLS and GWR.
 
 ```{r anova }
 anova(gwr.fit3)
 ```
 
+</style>
+<div class="alert alert-info"> <strong>HINT: </strong> Your answer should include a discussion highlighting the challenges associated with GWR
+</div>  
+
 </div>
 
 <p class="comment">
-[ Answer 15. click in this cell and type your answer here. your answer must be between the outer [] brackets with 50-to-150 words ]
+[ Answer 18. click in this cell and type your answer here. your answer must be between the outer [] brackets with 50-to-150 words ]
 </p>
 
 
