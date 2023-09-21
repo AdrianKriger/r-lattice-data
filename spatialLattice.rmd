@@ -1056,6 +1056,9 @@ plot(intp_coct['GV2015VAL.t.p'], #intp_col['bwadapt'],
 [ Answer 17. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
 </p>
 
+___
+## 10. Significance tests
+
 `spgwr` has a suite of tests comparing OLS and GWR models under an inferential framework. The null in these tests is the OLS and thus a statistically significant test statistic indicates that the GWR provides a _**statistically significant improvement**_ over an OLS in terms of its ability to match observed values. 
 
 <div class="alert alert-warning"> <strong>TASK!</strong> </div>
@@ -1088,7 +1091,7 @@ anova(gwr.fit3)
 [ Answer 18. click in this cell and type your answer here. your answer must be between the outer [] brackets with 50-to-150 words ]
 </p>
 
-
+___
 <div class="alert alert-block alert-success"> **Now that we're done we can create a loverly interactive plot** </div>
 
 ```{r plotly-libraries }
@@ -1108,7 +1111,8 @@ p <- plot_ly(
   alpha = 1,
   showlegend = FALSE,
   #text = ~OFC_SBRB_N, 
-  text = ~paste(round(CRIME), " residential theft cases in\n", OFC_SBRB_N),
+  text = ~paste(round(CRIME), " residential theft cases in\n", OFC_SBRB_N,
+                 "\n where the household income is R", round(AVMEDINC)),#, " per year"),
   hoveron='fills',
   hoverinfo = "text"
   #alpha = 0.8) %>% 
