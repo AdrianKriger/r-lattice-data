@@ -7,15 +7,10 @@ nav_order: 2
 # The Dataset
 
 In this practical we will be working with South African Police Service (SAPS), Statistics South Africa (STATSSA) and the City of Cape Town (CoCT)  open data. The data set contains information on crime (combined residential burglaries and residential thefts) and property valuation as well as other variables specific to Cape Town, South Africa in 2015.  
-
 <br>
-    
 **In the spirit of Open Science and Open Data the creation of this dataset is available as a seperate document: [latticeSpatial](https://github.com/AdrianKriger/r-lattice-data/blob/main/latticeSpatial.ipynb)**. It is open for inquiry, exploration and welcomes contribution, criticism and review.
-
 <br>
-
 Unit of analysis: 777 suburbs in Cape Town, South Africa
-
 
 The variables contained in the dataset are:  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`OBJECTID`   : polygon ID  
@@ -44,7 +39,5 @@ The variables contained in the dataset are:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`PREL` : precinct perimeter  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`WARD` : official ward / track number  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`geom` : suburb geometry
-
 <br>
-
 The dataset comes in the form of a `shapefile` within a `.geopackage` along with ALL the source material. Analysis will focus on `SHAPE_Area`, `GV2015_VAL`, `AVESTADist' 'AVAPREArea`, `CRIME`, `INCOME`, `AVBAC`.
