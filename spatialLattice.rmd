@@ -1,6 +1,6 @@
 ---
 ##-- arkriger: October 2023
-title: "Exploring Lattice Data with `R`"
+title: "Lattice Data with `R`"
 output:
   html_notebook: default
   html_document:
@@ -22,7 +22,7 @@ font-style: italic;
 
 </div>  
 
-Welcome to this exercise which explores **_Lattice Data_**. 
+Welcome to this exercise which explores **_Lattice Data_ with R**. 
 
 We we talk about lattice data we mean: observations from a random process sampled over a countable collection of spatial regions, and supplemented by a neighborhood structure. The observation locations can be regular (equally spaced grid) or irregular, and data at a particular location typically represent the entire region. _i.e.: census data is lattice data._
 
@@ -42,7 +42,8 @@ In this assignment, we will work through:
 &nbsp;&nbsp;&nbsp;**6. Correlogram**  
 &nbsp;&nbsp;&nbsp;**7. Local Indicators of Spatial Autocorrelation (LISA)**  
 &nbsp;&nbsp;&nbsp;**8. Ordinary Least Squares (OLS) Regression**  
-&nbsp;&nbsp;&nbsp;**9. Geographically Weighted Regresssion (GWR)**   
+&nbsp;&nbsp;&nbsp;**9. Geographically Weighted Regression (GWR)**  
+&nbsp;&nbsp;&nbsp;**10. three `spgwr` significance tests**  
 
 <div class="alert alert-danger">
   <strong>REQUIRED!</strong> 
@@ -306,7 +307,7 @@ legend(x = "right", bty = 'n',
 
 
 </style>
-<div class="alert alert-info"> <strong>HINT! </strong> What conclusion/s can you draw about the data distribution in the previous three plots? Motivate your answer.
+<div class="alert alert-info"> <strong>HINT! </strong> What conclusion/s can you draw about the data distribution in the previous two plots? Motivate your answer.
 
 </div>
 
@@ -1034,7 +1035,8 @@ names(gwr.fit3$SDF)
 dfree<-gwr.fit3$results$edf
 
 #- calculate the t ratio
-intp_coct$GV2015VAL.t <- gwr.fit3$SDF$intp_coct.GV2015VAL/gwr.fit3$SDF$intp_coct.GV2015VAL_se
+#intp_coct$GV2015VAL.t <- gwr.fit3$SDF$intp_coct.GV2015VAL/gwr.fit3$SDF$intp_coct.GV2015VAL_se
+intp_coct$GV2015VAL.t <- gwr.fit3$SDF$GV2015VAL/gwr.fit3$SDF$GV2015VAL_se
 
 #- calculate the pvalue using the pt()
 intp_coct$GV2015VAL.t.p<-2*pt(-abs(intp_coct$GV2015VAL.t), dfree)
