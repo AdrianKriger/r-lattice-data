@@ -2,9 +2,9 @@
 ##-- arkriger: October 2023
 title: "Lattice Data with `R`"
 output:
-  html_notebook: default
   html_document:
     df_print: paged
+  html_notebook: default
 ---
 
 <style> 
@@ -802,7 +802,7 @@ c. The standardized residuals vs `t-values` (the fitted values):
 
 **Similar to the LISA cluster; the `OLS residuals` better describe whether a spatial pattern exists or not** 
 
-```{r }
+```{r ols-residuals }
 # Plot the residuals
 res <- residuals(reg1)
 classes_sd <- classIntervals(res, n=4, style = "sd", rtimes = 1, dataPrecision = 3)
@@ -827,22 +827,28 @@ legend("bottomright",cex=0.7,fill=attr(cols,"palette"),bty="n",
 
 <div class="alert alert-block alert-success"> **What is the purpose of regression analysis:** _we want to predict_ 
 
-Lets create a synthetic dataset that represents an increase in $5\%$ household income (`AVMEDINC`) and an increase of $11\%$ in the value of properties (`GV2015VA`) then predict how `CRIME` will change.
+Lets create a 2025 synthetic dataset that represents an increase in $5\%$ household income (`AVMEDINC`) and an increase of $11\%$ in the value of properties (`GV2015VA`) then predict how `CRIME` will change.
 
 </div>
 
-```{r }
+```{r predict-ols }
 test <- coct[,c(9, 18)]
 test$AVMEDINC <- test$AVMEDINC * (100 + 5)/100
+#- fill no data
 test$GV2015VAL <- na.approx(test$GV2015VAL,  rule = 2)
 test$GV2015VAL <- test$GV2015VAL * (100 + 11)/100
-test <- coct[,c(9, 18)]
+#test <- coct[,c(9, 18)]
 
 # predict using the model
 predCrime = round(predict(reg1, newdata = test), 3)
 
+#- drop
 test <- test %>% st_drop_geometry()
 test$CRIME <- coct$CRIME
+
+#- rename
+names(test)[names(test) == 'GV2015VAL'] <- 'GV2025VAL'
+names(test)[names(test) == 'AVMEDINC'] <- 'AVMEDINC2025'
 
 # display
 data.frame(test, Predicted.Crime = predCrime)
@@ -1042,9 +1048,9 @@ intp_coct$GV2015VAL.t <- gwr.fit3$SDF$GV2015VAL/gwr.fit3$SDF$GV2015VAL_se
 intp_coct$GV2015VAL.t.p<-2*pt(-abs(intp_coct$GV2015VAL.t), dfree)
 ```
 
-```{r plot-p }
+```{r plot-gv-p }
 plot(intp_coct['GV2015VAL.t.p'], #intp_col['bwadapt'], 
-     main = 'p-value')#,#, border="lightgray", main=NA)
+     main = 'GV2015VAL p-value')#,#, border="lightgray", main=NA)
      #col = intp_col['bwadapt'])
 ```
 
