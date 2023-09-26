@@ -40,4 +40,4 @@ The variables contained in the dataset are:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`WARD` : official ward / track number  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; •	`geom` : suburb geometry
 <br>
-The dataset comes in the form of a `shapefile` within a `.geopackage` along with ALL the source material. Analysis will focus on `SHAPE_Area`, `GV2015_VAL`, `AVESTADist' 'AVAPREArea`, `CRIME`, `INCOME`, `AVBAC`.
+The dataset comes in the form of a `shapefile` within a `.geopackage` along with ALL the source material. Analysis will focus on `SHAPE_Area`, `GV2015_VAL`, `AVESTADist`, `AVAPREArea`, `CRIME`, `INCOME`, `AVBAC`.
