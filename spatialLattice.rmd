@@ -2,9 +2,9 @@
 ##-- arkriger: October 2023
 title: "Lattice Data with `R`"
 output:
+  html_notebook: default
   html_document:
     df_print: paged
-  html_notebook: default
 ---
 
 <style> 
@@ -1040,30 +1040,39 @@ The product of `gwr()` contains many wonderful parameters. The previous `code ch
 names(gwr.fit3$SDF)
 ```
 
-```{r }
+```{r calc-t.p }
 #- get the degrees of freedom
 dfree<-gwr.fit3$results$edf
 
 #- calculate the t ratio
-intp_coct$AVMEDINC.t <- gwr.fit3$SDF$AVMEDINC/gwr.fit3$SDF$AVMEDINC_se
-#intp_coct$GV2015VAL.t <- gwr.fit3$SDF$GV2015VAL/gwr.fit3$SDF$GV2015VAL_se
+#intp_coct$AVMEDINC.t <- gwr.fit3$SDF$AVMEDINC/gwr.fit3$SDF$AVMEDINC_se
+intp_coct$GV2015VAL.t <- gwr.fit3$SDF$GV2015VAL/gwr.fit3$SDF$GV2015VAL_se
 #intp_coct$AVAPREArea.t <- gwr.fit3$SDF$AVAPREArea/gwr.fit3$SDF$AVAPREArea_se
 
 #- calculate the pvalue using the pt()
-intp_coct$AVMEDINC.t.p<-2*pt(-abs(intp_coct$AVMEDINC.t), dfree)
-#intp_coct$GV2015VAL.t.p<-2*pt(-abs(intp_coct$GV2015VAL.t), dfree)
+#intp_coct$AVMEDINC.t.p<-2*pt(-abs(intp_coct$AVMEDINC.t), dfree)
+intp_coct$GV2015VAL.t.p<-2*pt(-abs(intp_coct$GV2015VAL.t), dfree)
 #intp_coct$AVAPREArea.t.p<-2*pt(-abs(intp_coct$AVAPREArea.t), dfree)
 ```
 
-```{r plot-gv-p }
-plot(intp_coct['AVMEDINC.t.p'], #intp_col['bwadapt'], 
-     main = 'AVMEDINC p-value')#,#, border="lightgray", main=NA)
-     #col = intp_col['bwadapt'])
+
+```{r plot-p.t }
+plot(intp_coct['GV2015VAL.t.p'], 
+     main = 'GV2015VAL p-value')
 ```
 
 </style>
 <div class="alert alert-info"> <strong>HINT: </strong> What do the results suggest about the spatial heterogeneity of the relationship between the 2015 property valuation (`GVAL2015`) and residential theft? (`CRIME`)?</div>
 
+
+<p class="comment">
+[ Answer 17. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
+</p>
+
+<div class="alert alert-danger">
+  <strong>BONUS MARKS!</strong> </div>
+
+- What do the `p-value` suggest for `AVMEDINC` and / or `AVAPREArea`?
 
 <p class="comment">
 [ Answer 17. click in this cell and type your answer here. your answer must be between the outer [] brackets ]
