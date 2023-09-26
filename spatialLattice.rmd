@@ -485,8 +485,10 @@ m = length(coct$CRIME)
 s = Szero(coct.wts)
 
 globalMoran <- moran.test(coct$CRIME, coct.wts, zero.policy = TRUE,  
-                     randomisation = T, 
-                     na.action = na.pass)#, n = m, S0 = s) #
+                     randomisation = T,
+                     #na.action = na.exclude
+                     na.action = na.pass
+                     )#, n = m, S0 = s) #
 #globalMoran
 ```
 
@@ -712,7 +714,7 @@ A `p-value` close-to 0 generally indicates significance while a 0 < `p-value` > 
 <br>
 
 **b. Coefficient Estimates.**
-The `Estimate` indicates how the rate of change, for one unit of the predictor variable (`AVMEDINC`, `GV2015VAL`), are associated with the independent variable (`CRIME`)
+The `Estimate` indicates how the rate of change, for one unit of the predictor variable (`AVMEDINC`, `GV2015VAL`, etc.), are associated with the independent variable (`CRIME`)
 
 <br>
 
@@ -723,11 +725,12 @@ These are the `R-squared` values that allow us to understand the _**precision**_
 ```{r ols-r }
 # OLS Regression to predict CRIME using AVEMEDINC and GV2015VAL as independent variables
 
-reg1 <- lm(coct$CRIME ~ coct$AVMEDINC + coct$GV2015VAL, na.action=na.exclude)
+ols <- lm(coct$CRIME ~ coct$AVMEDINC + coct$GV2015VAL  + coct$AVAPREArea + coct$AVBACH,
+           na.action=na.exclude)
 ```
 
 ```{r ols-summary }
-summary(reg1)
+summary(ols)
 ```
  
 
@@ -747,7 +750,7 @@ summary(reg1)
 
 ```{r ols-morans-residuals }
 #- Moran's I on the residuals 
-moran.test(residuals(reg1), coct.wts, alternative="two.sided", 
+moran.test(residuals(ols), coct.wts, alternative="two.sided", 
            zero.policy = TRUE,  na.action = na.exclude)
 ```
 
@@ -764,13 +767,13 @@ moran.test(residuals(reg1), coct.wts, alternative="two.sided",
 **a.**
 ```{r ols-residuals-summary }
 #- ols residuals summary
-summary(reg1$residuals)
+summary(ols$residuals)
 ```
 **b.**
 
 ```{r  ols-stand-residuals }
 #- ols standard residuals
-s.resids <- rstudent(reg1)
+s.resids <- rstudent(ols)
 plot(s.resids, type='h')
 abline(h=c(-2, 2), col='lightskyblue')
 ```
@@ -784,7 +787,7 @@ abline(h=c(-2, 2), col='lightskyblue')
 **c.**
 
 ```{r qqplot-ols-residuals}
-qqPlot(reg1)
+qqPlot(ols)
 ```
 
 </style>
@@ -804,16 +807,16 @@ c. The standardized residuals vs `t-values` (the fitted values):
 
 ```{r ols-residuals }
 # Plot the residuals
-res <- residuals(reg1)
+res <- residuals(ols)
 classes_sd <- classIntervals(res, n=4, style = "sd", rtimes = 1, dataPrecision = 3)
-res.palette <- colorRampPalette(c("blue","white","red"), space = "rgb")
+res.palette <- colorRampPalette(c("blue", "white", "red"), space = "rgb")
 pal <- res.palette(4)
-cols <- findColours(classes_sd,pal)
+cols <- findColours(classes_sd, pal)
 
-par(mar=rep(0,4))
+par(mar=rep(0, 4))
 plot(coct['CRIME'], col=cols, main="Residuals from OLS Model")#, border="grey")
-legend("bottomright",cex=0.7,fill=attr(cols,"palette"),bty="n",
-       legend=names(attr(cols, "table")),title="Residuals from OLS Model",ncol=4)
+legend("bottomright", cex=0.7, fill=attr(cols, "palette"), bty="n",
+       legend=names(attr(cols, "table")), title="Residuals from OLS Model", ncol=4)
 
 ```
 
@@ -827,20 +830,20 @@ legend("bottomright",cex=0.7,fill=attr(cols,"palette"),bty="n",
 
 <div class="alert alert-block alert-success"> **What is the purpose of regression analysis:** _we want to predict_ 
 
-Lets create a 2025 synthetic dataset that represents an increase in $5\%$ household income (`AVMEDINC`) and an increase of $11\%$ in the value of properties (`GV2015VA`) then predict how `CRIME` will change.
+Lets create a 2025 synthetic dataset that represents an increase in $5\%$ household income (`AVMEDINC`) and an increase of $11\%$ and $7\%$ in the value of properties (`GV2015VA`) and Bachelor degrees (`AVBACH`) and then predict how `CRIME` will change.
 
 </div>
 
 ```{r predict-ols }
-test <- coct[,c(9, 18)]
+test <- coct[,c(9, 13, 18, 20)]
 test$AVMEDINC <- test$AVMEDINC * (100 + 5)/100
 #- fill no data
 test$GV2015VAL <- na.approx(test$GV2015VAL,  rule = 2)
 test$GV2015VAL <- test$GV2015VAL * (100 + 11)/100
-#test <- coct[,c(9, 18)]
+test$AVBACH <- test$AVBACH * (100 + 7)/100
 
 # predict using the model
-predCrime = round(predict(reg1, newdata = test), 3)
+predCrime = round(predict(ols, newdata = test), 3)
 
 #- drop
 test <- test %>% st_drop_geometry()
@@ -849,6 +852,7 @@ test$CRIME <- coct$CRIME
 #- rename
 names(test)[names(test) == 'GV2015VAL'] <- 'GV2025VAL'
 names(test)[names(test) == 'AVMEDINC'] <- 'AVMEDINC2025'
+names(test)[names(test) == 'AVBACH'] <- 'AVBACH2025'
 
 # display
 data.frame(test, Predicted.Crime = predCrime)
@@ -925,7 +929,7 @@ We start with a basic model and increase the complexity.
 intp_coct.sp <- as(intp_coct, "Spatial")
 
 # GWR with Gauss
-crime.bw01 <- gwr.sel(CRIME ~ AVMEDINC + GV2015VAL, 
+crime.bw01 <- gwr.sel(CRIME ~ AVMEDINC + GV2015VAL + AVAPREArea + AVBACH,
                   data=intp_coct.sp)# 
 ```
 
@@ -938,7 +942,7 @@ This is basic estimated bandwidth (`h`); the distance (in meters, because our da
 If we now `fit` with this search parameter.
 
 ```{r bw01-fit }
-gwr.fit1 <- gwr(CRIME ~ AVMEDINC + GV2015VAL,
+gwr.fit1 <- gwr(CRIME ~ AVMEDINC + GV2015VAL+ AVAPREArea + AVBACH,
                 data = intp_coct.sp, 
                 bandwidth = crime.bw01, se.fit=T, hatmatrix=T)
 ```
@@ -956,7 +960,7 @@ In this case, an adaptive kernel is suitable.
 
 ```{r adapt }
 
-crime.bw03 <- gwr.sel(CRIME ~ AVMEDINC + GV2015VAL, 
+crime.bw03 <- gwr.sel(CRIME ~ AVMEDINC + GV2015VAL + AVAPREArea + AVBACH,
                   data=intp_coct.sp, 
                   adapt = TRUE)
 ```
@@ -974,7 +978,7 @@ Unlike the previous `h` this value is NOT a distance but the proportion of all c
 
 
 ```{r fit-adapt }
-gwr.fit3 <- gwr(CRIME ~ AVMEDINC + GV2015VAL,
+gwr.fit3 <- gwr(CRIME ~ AVMEDINC + GV2015VAL + AVAPREArea + AVBACH,
                 data = intp_coct.sp, 
                 adapt= crime.bw03, se.fit=T, hatmatrix=T)
 ```
@@ -987,9 +991,9 @@ gwr.fit3
 
 ```{r }
 # table of GWR coefficients
-t1 = apply(gwr.fit3$SDF@data[, 2:4], 2, summary)
+t1 = apply(gwr.fit3$SDF@data[, 2:6], 2, summary)
 # OLS coefficients
-t2 = coef(reg1)
+t2 = coef(ols)
 # joint together with a row bind
 tab <- rbind(t1, t2)
 # add name to last row of tab
@@ -1041,16 +1045,19 @@ names(gwr.fit3$SDF)
 dfree<-gwr.fit3$results$edf
 
 #- calculate the t ratio
-#intp_coct$GV2015VAL.t <- gwr.fit3$SDF$intp_coct.GV2015VAL/gwr.fit3$SDF$intp_coct.GV2015VAL_se
-intp_coct$GV2015VAL.t <- gwr.fit3$SDF$GV2015VAL/gwr.fit3$SDF$GV2015VAL_se
+intp_coct$AVMEDINC.t <- gwr.fit3$SDF$AVMEDINC/gwr.fit3$SDF$AVMEDINC_se
+#intp_coct$GV2015VAL.t <- gwr.fit3$SDF$GV2015VAL/gwr.fit3$SDF$GV2015VAL_se
+#intp_coct$AVAPREArea.t <- gwr.fit3$SDF$AVAPREArea/gwr.fit3$SDF$AVAPREArea_se
 
 #- calculate the pvalue using the pt()
-intp_coct$GV2015VAL.t.p<-2*pt(-abs(intp_coct$GV2015VAL.t), dfree)
+intp_coct$AVMEDINC.t.p<-2*pt(-abs(intp_coct$AVMEDINC.t), dfree)
+#intp_coct$GV2015VAL.t.p<-2*pt(-abs(intp_coct$GV2015VAL.t), dfree)
+#intp_coct$AVAPREArea.t.p<-2*pt(-abs(intp_coct$AVAPREArea.t), dfree)
 ```
 
 ```{r plot-gv-p }
-plot(intp_coct['GV2015VAL.t.p'], #intp_col['bwadapt'], 
-     main = 'GV2015VAL p-value')#,#, border="lightgray", main=NA)
+plot(intp_coct['AVMEDINC.t.p'], #intp_col['bwadapt'], 
+     main = 'AVMEDINC p-value')#,#, border="lightgray", main=NA)
      #col = intp_col['bwadapt'])
 ```
 
@@ -1072,10 +1079,12 @@ ___
 - **Question 18.** Execute the following three `code chunks / blocks` that tests GWR and discuss the result.
 
 
-```{r bfc }
+```{r bfc02 }
 BFC02.gwr.test(gwr.fit3)
 ```
-
+```{r bfc99 }
+BFC99.gwr.test(gwr.fit3)
+```
 
 ```{r lmz-test }
 LMZ.F1GWR.test(gwr.fit3)
